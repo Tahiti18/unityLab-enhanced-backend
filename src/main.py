@@ -30,6 +30,7 @@ CORS(app, origins=[
     'https://thepromptlink.netlify.app',
     'https://singular-bunny-82fc57.netlify.app',
     'https://incomparable-cascaron-dd9815.netlify.app',
+    'https://effervescent-pothos-4fbe1c.netlify.app',
     'https://jazzy-shortbread-e3aee3.netlify.app',
     'https://dancing-meerkat-41c610.netlify.app',
     'https://helpful-jalebi-df5d7d.netlify.app',
