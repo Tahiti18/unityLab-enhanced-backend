@@ -3620,7 +3620,7 @@ console.log('Section 5: Agent Windows - Exact extraction from working site - Rea
 </div>
 
 <script>
-// ======= COMPLETE BACKEND INTEGRATION =======
+// ======= CORRECTED BACKEND INTEGRATION =======
 const API_BASE_URL = 'https://web-production-cdd5d.up.railway.app';
 
 let currentSession = null;
@@ -3630,28 +3630,28 @@ let roundCount = 0;
 let isSessionActive = false;
 let selectedMode = 'manual';
 
-// Agent Configuration
+// Agent Configuration (matching backend agent IDs)
 const AGENT_CONFIG = {
-    'gpt4o': { name: 'GPT-4o', endpoint: "api/chat" },
-    'chatgpt4': { name: 'ChatGPT 4 Turbo', endpoint: "api/chat" },
-    'gemini2': { name: 'Gemini 2.0 Flash', endpoint: "api/chat" },
-    'llama': { name: 'Meta Llama 3.3', endpoint: "api/chat" },
-    'deepseek': { name: 'DeepSeek R1', endpoint: "api/chat" },
-    'wizardlm2': { name: 'WizardLM 2', endpoint: "api/chat" },
-    'mixtral8x22b': { name: 'Mixtral 8x22B', endpoint: "api/chat" },
-    'neuralchat': { name: 'Neural Chat', endpoint: "api/chat" },
-    'gemini15': { name: 'Gemini Pro 1.5', endpoint: "api/chat" },
-    'yilarge': { name: 'Yi Large', endpoint: "api/chat" },
-    'noushermes3': { name: 'Nous Hermes 3', endpoint: "api/chat" },
-    'dolphinmixtral': { name: 'Dolphin Mixtral', endpoint: "api/chat" },
-    'claude35sonnet': { name: 'Claude 3.5 Sonnet', endpoint: "api/chat" },
-    'commandrplus': { name: 'Command R+', endpoint: "api/chat" },
-    'perplexitypro': { name: 'Perplexity Pro', endpoint: "api/chat" },
-    'qwen25': { name: 'Qwen 2.5', endpoint: "api/chat" },
-    'mistralarge': { name: 'Mistral Large', endpoint: "api/chat" },
-    'llama31405b': { name: 'Llama 3.1 405B', endpoint: "api/chat" },
-    'grok2': { name: 'Grok 2', endpoint: "api/chat" },
-    'o1preview': { name: 'O1 Preview', endpoint: "api/chat" }
+    'gpt-4o': { name: 'GPT-4o', backend_id: 'gpt-4o' },
+    'chatgpt-4-turbo': { name: 'ChatGPT 4 Turbo', backend_id: 'chatgpt-4-turbo' },
+    'gemini-2.0-flash': { name: 'Gemini 2.0 Flash', backend_id: 'gemini-2.0-flash' },
+    'meta-llama-3.3': { name: 'Meta Llama 3.3', backend_id: 'meta-llama-3.3' },
+    'deepseek-r1': { name: 'DeepSeek R1', backend_id: 'deepseek-r1' },
+    'mistral-large': { name: 'Mistral Large', backend_id: 'mistral-large' },
+    'perplexity-pro': { name: 'Perplexity Pro', backend_id: 'perplexity-pro' },
+    'gemini-pro-1.5': { name: 'Gemini Pro 1.5', backend_id: 'gemini-pro-1.5' },
+    'command-r-plus': { name: 'Command R+', backend_id: 'command-r-plus' },
+    'qwen-2.5-72b': { name: 'Qwen 2.5 72B', backend_id: 'qwen-2.5-72b' },
+    'llama-3.3-70b': { name: 'Llama 3.3 70B', backend_id: 'llama-3.3-70b' },
+    'mixtral-8x22b': { name: 'Mixtral 8x22B', backend_id: 'mixtral-8x22b' },
+    'yi-large': { name: 'Yi Large', backend_id: 'yi-large' },
+    'nous-hermes-3': { name: 'Nous Hermes 3', backend_id: 'nous-hermes-3' },
+    'wizardlm-2': { name: 'WizardLM 2', backend_id: 'wizardlm-2' },
+    'dolphin-mixtral': { name: 'Dolphin Mixtral', backend_id: 'dolphin-mixtral' },
+    'openhermes-2.5': { name: 'OpenHermes 2.5', backend_id: 'openhermes-2.5' },
+    'starling-7b': { name: 'Starling 7B', backend_id: 'starling-7b' },
+    'neural-chat': { name: 'Neural Chat', backend_id: 'neural-chat' },
+    'zephyr-beta': { name: 'Zephyr Beta', backend_id: 'zephyr-beta' }
 };
 
 // Initialize the application
@@ -3659,6 +3659,7 @@ document.addEventListener('DOMContentLoaded', function() {
     console.log('UnityLab Frontend Initialized');
     initializeEventListeners();
     testConnection();
+    loadAgents();
     updateDiagnostics();
 });
 
@@ -3677,6 +3678,41 @@ function initializeEventListeners() {
     // Voice input buttons
     document.getElementById('voice-input-btn')?.addEventListener('click', startVoiceInput);
     document.getElementById('voice-human-btn')?.addEventListener('click', startHumanVoiceInput);
+}
+
+async function loadAgents() {
+    try {
+        const response = await fetch(`${API_BASE_URL}/api/agents/list`);
+        if (response.ok) {
+            const data = await response.json();
+            if (data.status === 'success') {
+                populateAgentDropdowns(data.agents);
+                console.log('Agents loaded successfully:', data.total_agents, 'agents');
+            }
+        }
+    } catch (error) {
+        console.error('Failed to load agents:', error);
+    }
+}
+
+function populateAgentDropdowns(agents) {
+    const agentASelect = document.getElementById('agent-a-select');
+    const agentBSelect = document.getElementById('agent-b-select');
+    
+    if (agentASelect && agentBSelect) {
+        // Clear existing options except placeholder
+        agentASelect.innerHTML = '<option value="">Select Agent A...</option>';
+        agentBSelect.innerHTML = '<option value="">Select Agent B...</option>';
+        
+        // Add agents to dropdowns
+        Object.keys(agents).forEach(agentId => {
+            const agent = agents[agentId];
+            const optionA = new Option(agent.name, agentId);
+            const optionB = new Option(agent.name, agentId);
+            agentASelect.add(optionA);
+            agentBSelect.add(optionB);
+        });
+    }
 }
 
 async function startSession() {
@@ -3705,8 +3741,7 @@ async function startSession() {
             },
             body: JSON.stringify({
                 agent_id: agentA || agentB,
-                message: prompt,
-                session_id: currentSession
+                message: prompt
             })
         });
 
@@ -3717,7 +3752,7 @@ async function startSession() {
         const data = await response.json();
         
         if (data.status === 'success') {
-            currentSession = data.session_id || generateSessionId();
+            currentSession = generateSessionId();
             sessionStartTime = new Date();
             isSessionActive = true;
             messageCount = 1;
@@ -3725,10 +3760,10 @@ async function startSession() {
             
             updateSessionControls(true);
             updateSessionStatus('Active');
-            displayAgentResponse(agentA || agentB, data.response || data.message);
+            displayAgentResponse(agentA || agentB, data.response);
             updateDiagnostics();
         } else {
-            throw new Error(data.error || 'Unknown error occurred');
+            throw new Error(data.message || 'Unknown error occurred');
         }
         
     } catch (error) {
@@ -3778,9 +3813,13 @@ function updateDiagnostics() {
     // Update diagnostic values
     const sessionTime = sessionStartTime ? Math.floor((new Date() - sessionStartTime) / 1000) : 0;
     
-    document.querySelector('.diagnostic-card .diagnostic-value')?.textContent = sessionTime + 's';
-    document.querySelectorAll('.diagnostic-card .diagnostic-value')[1]?.textContent = messageCount;
-    document.querySelectorAll('.diagnostic-card .diagnostic-value')[2]?.textContent = roundCount;
+    const diagnosticCards = document.querySelectorAll('.diagnostic-card .diagnostic-value');
+    if (diagnosticCards.length >= 4) {
+        diagnosticCards[0].textContent = sessionTime + 's';
+        diagnosticCards[1].textContent = messageCount;
+        diagnosticCards[2].textContent = roundCount;
+        diagnosticCards[3].textContent = isSessionActive ? '2' : '0';
+    }
     
     // Update counters in status boxes
     document.getElementById('completed-rounds')?.textContent = roundCount;
@@ -3790,14 +3829,15 @@ function updateDiagnostics() {
 async function testConnection() {
     try {
         const response = await fetch(`${API_BASE_URL}/health`);
-        const data = await response.json();
-        
-        if (data.status === 'healthy') {
-            console.log('Backend connection successful:', data);
-            updateConnectionStatus(true);
-        } else {
-            throw new Error('Backend unhealthy');
+        if (response.ok) {
+            const data = await response.json();
+            if (data.status === 'healthy') {
+                console.log('Backend connection successful:', data);
+                updateConnectionStatus(true);
+                return;
+            }
         }
+        throw new Error('Backend unhealthy');
     } catch (error) {
         console.error('Backend connection failed:', error);
         updateConnectionStatus(false);
@@ -3805,18 +3845,20 @@ async function testConnection() {
 }
 
 function updateConnectionStatus(connected) {
-    const statusDot = document.querySelector('.status-dot');
-    const statusText = document.querySelector('.status-text');
+    const statusDots = document.querySelectorAll('.status-dot');
+    const statusTexts = document.querySelectorAll('.status-text');
     
-    if (statusDot && statusText) {
+    statusDots.forEach(dot => {
         if (connected) {
-            statusDot.style.background = 'var(--success)';
-            statusText.textContent = 'System Online';
+            dot.style.background = '#10b981'; // green
         } else {
-            statusDot.style.background = 'var(--error)';
-            statusText.textContent = 'System Offline';
+            dot.style.background = '#ef4444'; // red
         }
-    }
+    });
+    
+    statusTexts.forEach(text => {
+        text.textContent = connected ? 'System Online' : 'System Offline';
+    });
 }
 
 function generateSessionId() {
@@ -3879,8 +3921,7 @@ async function nextStep() {
             },
             body: JSON.stringify({
                 agent_id: nextAgent,
-                message: humanInput || "Continue the conversation",
-                session_id: currentSession
+                message: humanInput || "Continue the conversation"
             })
         });
 
@@ -3891,7 +3932,7 @@ async function nextStep() {
         const data = await response.json();
         
         if (data.status === 'success') {
-            displayAgentResponse(nextAgent, data.response || data.message);
+            displayAgentResponse(nextAgent, data.response);
             roundCount++;
             messageCount++;
             updateDiagnostics();
@@ -3901,7 +3942,7 @@ async function nextStep() {
                 document.getElementById('human-input').value = '';
             }
         } else {
-            throw new Error(data.error || 'Unknown error occurred');
+            throw new Error(data.message || 'Unknown error occurred');
         }
         
     } catch (error) {
@@ -3989,9 +4030,11 @@ function startHumanVoiceInput() {
     alert('Voice input feature coming soon!');
 }
 
-// Sections 6-9 functionality - ready for backend integration
-console.log('UnityLab Frontend: Complete backend integration loaded');
+// UnityLab Frontend: Complete backend integration loaded
+console.log('UnityLab Frontend: Corrected backend integration loaded');
 console.log('Backend URL:', API_BASE_URL);
+console.log('Available agents:', Object.keys(AGENT_CONFIG).length);
+</script>
 </script>
 
 </body>
