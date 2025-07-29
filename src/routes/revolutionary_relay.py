@@ -463,7 +463,7 @@ def relay_status():
         },
         "timestamp": datetime.now().isoformat()
     })
-    @revolutionary_relay_bp.route('/status', methods=['GET'])
+@revolutionary_relay_bp.route('/status', methods=['GET'])
 def status():
     return jsonify({
         'status': 'active',
