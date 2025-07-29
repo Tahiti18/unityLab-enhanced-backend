@@ -4280,6 +4280,114 @@ setInterval(updateDiagnostics, 1000);
 console.log('✅ UnityLab Frontend: Fixed JavaScript loaded successfully!');
 console.log('🔗 Backend URL:', API_BASE_URL);
 </script>
+<!-- Upgrade Modal -->
+<div id="upgrade-modal" class="modal">
+    <div class="modal-content">
+        <div class="modal-header">
+            <h2>Upgrade Your PromptLink Experience</h2>
+            <button class="modal-close" onclick="closeUpgradeModal()">&times;</button>
+        </div>
+        <div class="modal-body">
+            <div class="plans-grid">
+                <!-- Free Plan -->
+                <div class="plan-card" data-plan="free">
+                    <div class="plan-badge free">FREE</div>
+                    <div class="plan-header">
+                        <h3>Free</h3>
+                        <div class="plan-price">$0<span>/month</span></div>
+                    </div>
+                    <div class="plan-credits">100 Daily Credits</div>
+                    <div class="plan-features">
+                        <div class="feature"> 3 AI Agents</div>
+                        <div class="feature"> Basic Orchestration</div>
+                        <div class="feature"> Community Support</div>
+                        <div class="feature"> Limited Export</div>
+                    </div>
+                    <button class="plan-btn" onclick="selectPlan('free')">Get Started Free</button>
+                </div>
+                <!-- Basic Plan -->
+                <div class="plan-card featured" data-plan="basic">
+                    <div class="plan-badge">Most Popular</div>
+                    <div class="plan-header">
+                        <h3>Basic</h3>
+                        <div class="plan-price">$19<span>/month</span></div>
+                    </div>
+                    <div class="plan-credits">5,000 Credits</div>
+                    <div class="plan-features">
+                        <div class="feature"> 5 AI Agents</div>
+                        <div class="feature"> Basic Orchestration</div>
+                        <div class="feature"> Standard Support</div>
+                        <div class="feature"> Export Conversations</div>
+                    </div>
+                    <button class="plan-btn featured" onclick="selectPlan('basic')">Choose Basic</button>
+                </div>
+                <!-- Professional Plan -->
+                <div class="plan-card" data-plan="professional">
+                    <div class="plan-header">
+                        <h3>Professional</h3>
+                        <div class="plan-price">$99<span>/month</span></div>
+                    </div>
+                    <div class="plan-credits">25,000 Credits</div>
+                    <div class="plan-features">
+                        <div class="feature"> 10+ AI Agents</div>
+                        <div class="feature"> Advanced Orchestration</div>
+                        <div class="feature"> Human Simulator</div>
+                        <div class="feature"> Priority Support</div>
+                        <div class="feature"> API Access</div>
+                    </div>
+                    <button class="plan-btn" onclick="selectPlan('professional')">Choose Professional</button>
+                </div>
+                <!-- Expert Plan -->
+                <div class="plan-card" data-plan="expert">
+                    <div class="plan-header">
+                        <h3>Expert</h3>
+                        <div class="plan-price">$499<span>/month</span></div>
+                    </div>
+                    <div class="plan-credits">150,000 Credits</div>
+                    <div class="plan-features">
+                        <div class="feature"> All AI Agents</div>
+                        <div class="feature"> AI Expert Master Persona</div>
+                        <div class="feature"> Enterprise Features</div>
+                        <div class="feature"> White-label Options</div>
+                        <div class="feature"> Dedicated Support</div>
+                    </div>
+                    <button class="plan-btn" onclick="selectPlan('expert')">Choose Expert</button>
+                </div>
+            </div>
+            <div class="payment-security">
+                <i class="fas fa-lock"></i>
+                <span>Secure payment powered by Stripe</span>
+            </div>
+        </div>
+    </div>
+</div>
 
+<!-- Low Credits Modal -->
+<div id="low-credits-modal" class="modal">
+    <div class="modal-content">
+        <div class="modal-header">
+            <h2>Low Credits Warning</h2>
+            <button class="modal-close" onclick="closeLowCreditsModal()">&times;</button>
+        </div>
+        <div class="modal-body">
+            <div class="low-credits-message">
+                <p>You're running low on credits! Upgrade now to continue using all AI agents.</p>
+                <div class="credits-remaining">
+                    <span class="credits-count">247</span> credits remaining
+                </div>
+            </div>
+            <div class="upgrade-options">
+                <button class="upgrade-option-btn" onclick="selectPlan('basic')">
+                    <div class="option-title">Basic - $19/month</div>
+                    <div class="option-credits">5,000 Credits</div>
+                </button>
+                <button class="upgrade-option-btn featured" onclick="selectPlan('professional')">
+                    <div class="option-title">Professional - $99/month</div>
+                    <div class="option-credits">25,000 Credits</div>
+                </button>
+            </div>
+        </div>
+    </div>
+</div>
 </body>
 </html>
