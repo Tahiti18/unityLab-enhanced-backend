@@ -3685,14 +3685,14 @@ function setupEventListeners() {
 // Load agents from backend
 async function loadAgents() {
     try {
-        console.log('🔄 Loading agents from:', API_BASE_URL + '/api/agents/list');
+        console.log('🔄 Loading agents from:', API_BASE_URL + '/api/agents');
         
-        const response = await fetch(API_BASE_URL + '/api/agents/list', {
-            method: 'GET',
-            headers: {
-                'Accept': 'application/json'
-            }
-        });
+        const response = await fetch(API_BASE_URL + '/api/agents', {
+    method: 'GET',
+    headers: {
+        'Accept': 'application/json'
+    }
+});
 
         console.log('📡 Response status:', response.status);
         
