@@ -3715,6 +3715,56 @@ async function loadAgents() {
         alert('Failed to load agents: ' + error.message);
     }
 }
+// Modal functions
+function showUpgradeModal() {
+    document.getElementById('upgrade-modal').style.display = 'block';
+}
+
+function closeUpgradeModal() {
+    document.getElementById('upgrade-modal').style.display = 'none';
+}
+
+function showLowCreditsModal() {
+    document.getElementById('low-credits-modal').style.display = 'block';
+}
+
+function closeLowCreditsModal() {
+    document.getElementById('low-credits-modal').style.display = 'none';
+}
+
+// Close modals when clicking outside
+window.onclick = function(event) {
+    const upgradeModal = document.getElementById('upgrade-modal');
+    const lowCreditsModal = document.getElementById('low-credits-modal');
+    
+    if (event.target === upgradeModal) {
+        closeUpgradeModal();
+    }
+    if (event.target === lowCreditsModal) {
+        closeLowCreditsModal();
+    }
+};
+
+// Function to select a plan and process payment
+function selectPlan(planId) {
+    if (planId === 'free') {
+        alert('Free Plan Activated!\n\nYou now have 100 daily credits and access to 3 AI agents.\n\nWelcome to PromptLink!');
+        closeUpgradeModal();
+        return;
+    }
+    
+    fetch(`${API_BASE_URL}/api/payments/create-checkout`, {
+        method: 'POST',
+        headers: { 'Content-Type': 'application/json' },
+        body: JSON.stringify({ plan_id: planId, email: 'user@example.com' })
+    })
+    .then(response => response.json())
+    .then(data => {
+        if (data.checkout_url) {
+            window.location.href = data.checkout_url;
+        }
+    });
+}
 
 // Populate agent dropdowns
 function populateAgentDropdowns(agents) {
