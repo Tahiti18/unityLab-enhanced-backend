@@ -3932,7 +3932,17 @@ function updateDiagnostics() {
 
 async function testConnection() {
     try {
-        const response = await fetch(`${API_BASE_URL}/health`);
+        // First try agents/list endpoint
+        let response = await fetch(`${API_BASE_URL}/api/agents/list`);
+        if (response.ok) {
+            const data = await response.json();
+            console.log('API agents/list successful:', data);
+            updateConnectionStatus(true);
+            return;
+        }
+        
+        // If that fails, try the original health endpoint
+        response = await fetch(`${API_BASE_URL}/health`);
         if (response.ok) {
             const data = await response.json();
             if (data.status === 'healthy') {
@@ -3941,6 +3951,7 @@ async function testConnection() {
                 return;
             }
         }
+        
         throw new Error('Backend unhealthy');
     } catch (error) {
         console.error('Backend connection failed:', error);
