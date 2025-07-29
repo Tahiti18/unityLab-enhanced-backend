@@ -404,4 +404,40 @@ def export_clone():
         
     except Exception as e:
         return jsonify({'status': 'error', 'message': str(e)}), 500
+@human_simulator_bp.route('/status', methods=['GET'])
+def simulator_status():
+    """Return the status of the Human Simulator system."""
+    # Connect to database to get some stats
+    try:
+        conn = sqlite3.connect('human_simulator_learning.db')
+        cursor = conn.cursor()
+        
+        # Get pattern count
+        cursor.execute("SELECT COUNT(*) FROM user_patterns")
+        pattern_count = cursor.fetchone()[0]
+        
+        # Get user count
+        cursor.execute("SELECT COUNT(DISTINCT user_id) FROM user_patterns")
+        user_count = cursor.fetchone()[0]
+        
+        conn.close()
+    except Exception as e:
+        pattern_count = 0
+        user_count = 0
+    
+    return jsonify({
+        "status": "active",
+        "name": "Human Simulator",
+        "version": "1.0.0",
+        "features": [
+            "human-response-simulation",
+            "personality-cloning",
+            "interaction-learning"
+        ],
+        "statistics": {
+            "patterns_learned": pattern_count,
+            "users_analyzed": user_count
+        },
+        "timestamp": datetime.now().isoformat()
+    })
 
