@@ -3620,175 +3620,277 @@ console.log('Section 5: Agent Windows - Exact extraction from working site - Rea
 </div>
 
 <script>
-// ======= CORRECTED BACKEND INTEGRATION =======
+// ======= FIXED JAVASCRIPT FOR UNITYLAB =======
 const API_BASE_URL = 'https://web-production-cdd5d.up.railway.app';
 
+// Global variables
 let currentSession = null;
 let sessionStartTime = null;
 let messageCount = 0;
 let roundCount = 0;
 let isSessionActive = false;
-let selectedMode = 'manual';
+let selectedAgentA = null;
+let selectedAgentB = null;
 
-// Agent Configuration (matching backend agent IDs)
-const AGENT_CONFIG = {
-    'gpt-4o': { name: 'GPT-4o', backend_id: 'gpt-4o' },
-    'chatgpt-4-turbo': { name: 'ChatGPT 4 Turbo', backend_id: 'chatgpt-4-turbo' },
-    'gemini-2.0-flash': { name: 'Gemini 2.0 Flash', backend_id: 'gemini-2.0-flash' },
-    'meta-llama-3.3': { name: 'Meta Llama 3.3', backend_id: 'meta-llama-3.3' },
-    'deepseek-r1': { name: 'DeepSeek R1', backend_id: 'deepseek-r1' },
-    'mistral-large': { name: 'Mistral Large', backend_id: 'mistral-large' },
-    'perplexity-pro': { name: 'Perplexity Pro', backend_id: 'perplexity-pro' },
-    'gemini-pro-1.5': { name: 'Gemini Pro 1.5', backend_id: 'gemini-pro-1.5' },
-    'command-r-plus': { name: 'Command R+', backend_id: 'command-r-plus' },
-    'qwen-2.5-72b': { name: 'Qwen 2.5 72B', backend_id: 'qwen-2.5-72b' },
-    'llama-3.3-70b': { name: 'Llama 3.3 70B', backend_id: 'llama-3.3-70b' },
-    'mixtral-8x22b': { name: 'Mixtral 8x22B', backend_id: 'mixtral-8x22b' },
-    'yi-large': { name: 'Yi Large', backend_id: 'yi-large' },
-    'nous-hermes-3': { name: 'Nous Hermes 3', backend_id: 'nous-hermes-3' },
-    'wizardlm-2': { name: 'WizardLM 2', backend_id: 'wizardlm-2' },
-    'dolphin-mixtral': { name: 'Dolphin Mixtral', backend_id: 'dolphin-mixtral' },
-    'openhermes-2.5': { name: 'OpenHermes 2.5', backend_id: 'openhermes-2.5' },
-    'starling-7b': { name: 'Starling 7B', backend_id: 'starling-7b' },
-    'neural-chat': { name: 'Neural Chat', backend_id: 'neural-chat' },
-    'zephyr-beta': { name: 'Zephyr Beta', backend_id: 'zephyr-beta' }
-};
-
-// Initialize the application
+// Initialize when page loads
 document.addEventListener('DOMContentLoaded', function() {
-    console.log('UnityLab Frontend Initialized');
-    initializeEventListeners();
-    testConnection();
+    console.log('UnityLab Frontend: Initializing...');
+    setupEventListeners();
     loadAgents();
+    updateSessionStatus('Inactive');
     updateDiagnostics();
 });
 
-function initializeEventListeners() {
-    // Session controls
-    document.getElementById('start-session')?.addEventListener('click', startSession);
-    document.getElementById('next-step')?.addEventListener('click', nextStep);
-    document.getElementById('pause-session')?.addEventListener('click', pauseSession);
-    document.getElementById('stop-session')?.addEventListener('click', stopSession);
-    document.getElementById('clear-all')?.addEventListener('click', clearAll);
-    
-    // Agent selection
-    document.getElementById('agent-a-select')?.addEventListener('change', () => handleAgentSelection('a'));
-    document.getElementById('agent-b-select')?.addEventListener('change', () => handleAgentSelection('b'));
-    
-    // Voice input buttons
-    document.getElementById('voice-input-btn')?.addEventListener('click', startVoiceInput);
-    document.getElementById('voice-human-btn')?.addEventListener('click', startHumanVoiceInput);
+// Setup all event listeners
+function setupEventListeners() {
+    // Session control buttons
+    const startBtn = document.getElementById('start-session');
+    const nextBtn = document.getElementById('next-agent');
+    const pauseBtn = document.getElementById('pause-session');
+    const stopBtn = document.getElementById('stop-session');
+    const clearBtn = document.getElementById('clear-all');
+
+    if (startBtn) {
+        startBtn.addEventListener('click', startSession);
+        console.log('✅ Start Session button connected');
+    }
+    if (nextBtn) nextBtn.addEventListener('click', nextStep);
+    if (pauseBtn) pauseBtn.addEventListener('click', pauseSession);
+    if (stopBtn) stopBtn.addEventListener('click', stopSession);
+    if (clearBtn) clearBtn.addEventListener('click', clearAll);
+
+    // Agent selection dropdowns
+    const agentASelect = document.getElementById('agent-a-select');
+    const agentBSelect = document.getElementById('agent-b-select');
+
+    if (agentASelect) {
+        agentASelect.addEventListener('change', function() {
+            selectedAgentA = this.value;
+            console.log('Agent A selected:', selectedAgentA);
+            updateActiveAgents();
+        });
+    }
+
+    if (agentBSelect) {
+        agentBSelect.addEventListener('change', function() {
+            selectedAgentB = this.value;
+            console.log('Agent B selected:', selectedAgentB);
+            updateActiveAgents();
+        });
+    }
+
+    console.log('✅ All event listeners setup complete');
 }
 
-        async function loadAgents() {
-            try {
-                const response = await fetch(`${API_BASE_URL}/api/agents/list`);
-                if (response.ok) {
-                    const data = await response.json();
-                    if (data.status === 'success') {
-                        populateAgentDropdowns(data.agents);
-                        updateStatus('agents-status', 'connected', `${data.total_agents} agents loaded`);
-                        console.log('Agents loaded successfully:', data.total_agents, 'agents');
-                    }
-                }
-            } catch (error) {
-                updateStatus('agents-status', 'disconnected', 'Agent loading error');
-                console.error('Failed to load agents:', error);
+// Load agents from backend
+async function loadAgents() {
+    try {
+        console.log('🔄 Loading agents from:', API_BASE_URL + '/api/agents/list');
+        
+        const response = await fetch(API_BASE_URL + '/api/agents/list', {
+            method: 'GET',
+            headers: {
+                'Accept': 'application/json'
             }
+        });
+
+        console.log('📡 Response status:', response.status);
+        
+        if (!response.ok) {
+            throw new Error(`HTTP ${response.status}: ${response.statusText}`);
         }
 
+        const data = await response.json();
+        console.log('📦 Response data:', data);
+
+        if (data.status === 'success') {
+            console.log('✅ Agents loaded successfully:', Object.keys(data.agents).length, 'agents');
+            populateAgentDropdowns(data.agents);
+        } else {
+            throw new Error(data.message || 'Failed to load agents');
+        }
+
+    } catch (error) {
+        console.error('❌ Error loading agents:', error);
+        alert('Failed to load agents: ' + error.message);
+    }
+}
+
+// Populate agent dropdowns
 function populateAgentDropdowns(agents) {
     const agentASelect = document.getElementById('agent-a-select');
     const agentBSelect = document.getElementById('agent-b-select');
-    
-    if (agentASelect && agentBSelect) {
-        // Clear existing options except placeholder
+
+    if (agentASelect) {
         agentASelect.innerHTML = '<option value="">Select Agent A...</option>';
-        agentBSelect.innerHTML = '<option value="">Select Agent B...</option>';
-        
-        // Add agents to dropdowns
         Object.keys(agents).forEach(agentId => {
             const agent = agents[agentId];
-            const optionA = new Option(agent.name, agentId);
-            const optionB = new Option(agent.name, agentId);
-            agentASelect.add(optionA);
-            agentBSelect.add(optionB);
+            const option = document.createElement('option');
+            option.value = agentId;
+            option.textContent = agent.name;
+            agentASelect.appendChild(option);
         });
+        console.log('✅ Agent A dropdown populated with', Object.keys(agents).length, 'agents');
+    }
+
+    if (agentBSelect) {
+        agentBSelect.innerHTML = '<option value="">Select Agent B...</option>';
+        Object.keys(agents).forEach(agentId => {
+            const agent = agents[agentId];
+            const option = document.createElement('option');
+            option.value = agentId;
+            option.textContent = agent.name;
+            agentBSelect.appendChild(option);
+        });
+        console.log('✅ Agent B dropdown populated with', Object.keys(agents).length, 'agents');
     }
 }
 
+// FIXED START SESSION FUNCTION
 async function startSession() {
-    const agentA = document.getElementById('agent-a-select')?.value;
-    const agentB = document.getElementById('agent-b-select')?.value;
-    const prompt = document.getElementById('initial-prompt')?.value.trim();
-
-    if (!agentA && !agentB) {
-        alert("Please select at least one agent");
-        return;
-    }
-
-    if (!prompt) {
-        alert("Please enter an initial prompt");
-        return;
-    }
-
     try {
-        updateSessionStatus('Starting session...');
-        
-        const response = await fetch(`${API_BASE_URL}/api/agents/chat`, {
+        console.log('🚀 Starting session...');
+
+        // Get form data
+        const promptInput = document.getElementById('initial-prompt');
+        const conversationStyle = document.getElementById('conversation-style');
+
+        if (!promptInput || !promptInput.value.trim()) {
+            alert('Please enter an initial prompt');
+            return;
+        }
+
+        const prompt = promptInput.value.trim();
+        const style = conversationStyle ? conversationStyle.value : 'Free Discussion';
+
+        // Use Agent A if selected, otherwise use Agent B, otherwise use default
+        const agentId = selectedAgentA || selectedAgentB || 'gpt-4o';
+
+        console.log('📤 Sending request to:', API_BASE_URL + '/api/agents/chat');
+        console.log('🤖 Agent ID:', agentId);
+        console.log('💬 Prompt:', prompt);
+        console.log('🎨 Style:', style);
+
+        // Update UI to show loading
+        updateSessionStatus('Starting...');
+        const startBtn = document.getElementById('start-session');
+        if (startBtn) {
+            startBtn.disabled = true;
+            startBtn.innerHTML = '<i class="fas fa-spinner fa-spin"></i> Starting...';
+        }
+
+        // Make API call to backend
+        const response = await fetch(API_BASE_URL + '/api/agents/chat', {
             method: 'POST',
-            headers: { 
+            headers: {
                 'Content-Type': 'application/json',
                 'Accept': 'application/json'
             },
             body: JSON.stringify({
-                agent_id: agentA || agentB,
-                message: prompt
+                agent_id: agentId,
+                message: prompt,
+                conversation_style: style
             })
         });
 
+        console.log('📡 Response status:', response.status);
+
         if (!response.ok) {
-            throw new Error(`HTTP error! status: ${response.status}`);
+            throw new Error(`HTTP ${response.status}: ${response.statusText}`);
         }
 
         const data = await response.json();
-        
+        console.log('📦 Response data:', data);
+
         if (data.status === 'success') {
-            currentSession = generateSessionId();
-            sessionStartTime = new Date();
+            // Display agent response
+            displayAgentResponse(agentId, data);
+
+            // Update session state
             isSessionActive = true;
+            sessionStartTime = new Date();
             messageCount = 1;
             roundCount = 1;
-            
-            updateSessionControls(true);
+            currentSession = generateSessionId();
+
             updateSessionStatus('Active');
-            displayAgentResponse(agentA || agentB, data.response);
             updateDiagnostics();
+
+            console.log('✅ Session started successfully!');
+            alert('Session started! Agent responded successfully.');
+
         } else {
             throw new Error(data.message || 'Unknown error occurred');
         }
-        
+
     } catch (error) {
-        console.error('Session start error:', error);
-        updateSessionStatus('Error: ' + error.message);
+        console.error('❌ Start session error:', error);
+        updateSessionStatus('Error');
         alert('Failed to start session: ' + error.message);
+    } finally {
+        // Reset button
+        const startBtn = document.getElementById('start-session');
+        if (startBtn) {
+            startBtn.disabled = false;
+            startBtn.innerHTML = '<i class="fas fa-play"></i> Start Session';
+        }
     }
 }
 
-function displayAgentResponse(agentId, response) {
-    const agentName = AGENT_CONFIG[agentId]?.name || agentId;
-    const responseContainer = document.getElementById(`agent-${agentId === document.getElementById('agent-a-select')?.value ? 'a' : 'b'}-response`);
-    
+// Display agent response
+function displayAgentResponse(agentId, data) {
+    console.log('📝 Displaying response for agent:', agentId);
+
+    // Determine which agent container to use
+    const isAgentA = (agentId === selectedAgentA);
+    const containerSuffix = isAgentA ? 'a' : 'b';
+    const responseContainer = document.getElementById(`agent-${containerSuffix}-response`);
+
     if (responseContainer) {
         responseContainer.innerHTML = `
             <div class="agent-message">
-                <div class="message-header">
-                    <strong>${agentName}</strong>
-                    <span class="timestamp">${new Date().toLocaleTimeString()}</span>
+                <div class="message-header" style="display: flex; justify-content: space-between; align-items: center; margin-bottom: 1rem; padding-bottom: 0.5rem; border-bottom: 1px solid var(--border-color);">
+                    <strong style="color: var(--logo-primary);">${data.agent_name}</strong>
+                    <span style="font-size: 0.8rem; color: var(--text-secondary);">${data.specialty}</span>
                 </div>
-                <div class="message-content">${response}</div>
+                <div class="message-content" style="color: var(--text-primary); line-height: 1.6;">
+                    ${data.response}
+                </div>
+                <div class="message-meta" style="margin-top: 1rem; padding-top: 0.5rem; border-top: 1px solid var(--border-color);">
+                    <small style="color: var(--text-secondary);">Response at ${new Date(data.timestamp).toLocaleTimeString()}</small>
+                </div>
             </div>
         `;
+        console.log('✅ Agent response displayed in container:', containerSuffix);
+    }
+
+    // Also update live conversation area
+    const liveConversation = document.getElementById('live-conversation');
+    if (liveConversation) {
+        // Clear empty state if this is the first message
+        if (messageCount === 1) {
+            liveConversation.innerHTML = '';
+        }
+
+        const conversationEntry = document.createElement('div');
+        conversationEntry.className = 'conversation-entry';
+        conversationEntry.style.cssText = `
+            margin-bottom: 1.5rem;
+            padding: 1rem;
+            background: rgba(30, 41, 59, 0.6);
+            border: 1px solid var(--border-color);
+            border-radius: 8px;
+        `;
+        conversationEntry.innerHTML = `
+            <div style="display: flex; justify-content: space-between; align-items: center; margin-bottom: 0.5rem;">
+                <div style="font-weight: 600; color: var(--logo-primary);">${data.agent_name}</div>
+                <div style="font-size: 0.8rem; color: var(--text-secondary);">${new Date(data.timestamp).toLocaleTimeString()}</div>
+            </div>
+            <div style="color: var(--text-primary); line-height: 1.6;">${data.response}</div>
+        `;
+        liveConversation.appendChild(conversationEntry);
+        liveConversation.scrollTop = liveConversation.scrollHeight;
+        console.log('✅ Message added to live conversation');
     }
 }
 
@@ -4004,39 +4106,168 @@ function stopSession() {
     }
 }
 
+// Update session status
+function updateSessionStatus(status) {
+    const statusElement = document.getElementById('session-status');
+    if (statusElement) {
+        statusElement.textContent = status;
+    }
+}
+
+// Update active agents count
+function updateActiveAgents() {
+    const activeCount = (selectedAgentA ? 1 : 0) + (selectedAgentB ? 1 : 0);
+    const activeAgentsElement = document.getElementById('active-agents');
+    if (activeAgentsElement) {
+        activeAgentsElement.textContent = activeCount;
+    }
+
+    const activeAgentElement = document.getElementById('active-agent');
+    if (activeAgentElement) {
+        if (selectedAgentA && selectedAgentB) {
+            activeAgentElement.textContent = 'Both';
+        } else if (selectedAgentA) {
+            activeAgentElement.textContent = 'Agent A';
+        } else if (selectedAgentB) {
+            activeAgentElement.textContent = 'Agent B';
+        } else {
+            activeAgentElement.textContent = '-';
+        }
+    }
+}
+
+// Update diagnostics
+function updateDiagnostics() {
+    const sessionTime = sessionStartTime ? Math.floor((new Date() - sessionStartTime) / 1000) : 0;
+
+    const elements = {
+        'session-time': sessionTime + 's',
+        'total-messages': messageCount,
+        'current-round': roundCount,
+        'completed-rounds': Math.max(0, roundCount - 1),
+        'message-count': messageCount
+    };
+
+    Object.keys(elements).forEach(id => {
+        const element = document.getElementById(id);
+        if (element) {
+            element.textContent = elements[id];
+        }
+    });
+
+    if (currentSession) {
+        const sessionElement = document.getElementById('current-session');
+        if (sessionElement) {
+            sessionElement.textContent = `Session ID: ${currentSession}`;
+        }
+    }
+}
+
+// Generate session ID
+function generateSessionId() {
+    return 'session_' + Date.now() + '_' + Math.random().toString(36).substr(2, 9);
+}
+
+// Other functions
+function nextStep() {
+    console.log('⏭️ Next step clicked');
+    if (!isSessionActive) {
+        alert('Please start a session first');
+        return;
+    }
+}
+
+function pauseSession() {
+    if (!isSessionActive) return;
+    
+    isSessionActive = !isSessionActive;
+    updateSessionStatus(isSessionActive ? 'Active' : 'Paused');
+    console.log('⏸️ Session paused/resumed');
+}
+
+function stopSession() {
+    isSessionActive = false;
+    currentSession = null;
+    sessionStartTime = null;
+    messageCount = 0;
+    roundCount = 0;
+    updateSessionStatus('Inactive');
+    updateDiagnostics();
+    console.log('⏹️ Session stopped');
+    
+    // Reset agent response areas
+    const agentAResponse = document.getElementById('agent-a-response');
+    const agentBResponse = document.getElementById('agent-b-response');
+    
+    if (agentAResponse) {
+        agentAResponse.innerHTML = `
+            <div class="empty-state">
+                <i class="fas fa-robot"></i>
+                <h3>Agent A ready for collaboration</h3>
+                <p>Select an agent and start a session to begin!</p>
+            </div>
+        `;
+    }
+    
+    if (agentBResponse) {
+        agentBResponse.innerHTML = `
+            <div class="empty-state">
+                <i class="fas fa-robot"></i>
+                <h3>Agent B ready for collaboration</h3>
+                <p>Select an agent and start a session to begin!</p>
+            </div>
+        `;
+    }
+}
+
 function clearAll() {
-    if (confirm('Are you sure you want to clear all data? This action cannot be undone.')) {
+    if (confirm('Clear all data? This action cannot be undone.')) {
         stopSession();
         
         // Clear form inputs
-        document.getElementById('initial-prompt')?.value = '';
-        document.getElementById('human-input')?.value = '';
-        document.getElementById('agent-a-select')?.value = '';
-        document.getElementById('agent-b-select')?.value = '';
+        const promptInput = document.getElementById('initial-prompt');
+        const humanInput = document.getElementById('human-input');
+        const agentASelect = document.getElementById('agent-a-select');
+        const agentBSelect = document.getElementById('agent-b-select');
         
-        // Reset agent selections
-        handleAgentSelection('a');
-        handleAgentSelection('b');
+        if (promptInput) promptInput.value = '';
+        if (humanInput) humanInput.value = '';
+        if (agentASelect) agentASelect.value = '';
+        if (agentBSelect) agentBSelect.value = '';
         
-        alert('All data cleared successfully!');
+        selectedAgentA = null;
+        selectedAgentB = null;
+        updateActiveAgents();
+        
+        // Reset live conversation
+        const liveConversation = document.getElementById('live-conversation');
+        if (liveConversation) {
+            liveConversation.innerHTML = `
+                <div class="empty-state">
+                    <i class="fas fa-comments"></i>
+                    <h3>No conversation yet</h3>
+                    <p>Select agents and start a session to begin! All agent responses and conversations will appear here in real-time.</p>
+                </div>
+            `;
+        }
+        
+        console.log('🗑️ All data cleared');
     }
 }
 
 function startVoiceInput() {
-    // Voice input functionality - placeholder for now
     alert('Voice input feature coming soon!');
 }
 
 function startHumanVoiceInput() {
-    // Human voice input functionality - placeholder for now
     alert('Voice input feature coming soon!');
 }
 
-// UnityLab Frontend: Complete backend integration loaded
-console.log('UnityLab Frontend: Corrected backend integration loaded');
-console.log('Backend URL:', API_BASE_URL);
-console.log('Available agents:', Object.keys(AGENT_CONFIG).length);
-</script>
+// Start diagnostics timer
+setInterval(updateDiagnostics, 1000);
+
+console.log('✅ UnityLab Frontend: Fixed JavaScript loaded successfully!');
+console.log('🔗 Backend URL:', API_BASE_URL);
 </script>
 
 </body>
