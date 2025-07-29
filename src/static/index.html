@@ -3680,20 +3680,22 @@ function initializeEventListeners() {
     document.getElementById('voice-human-btn')?.addEventListener('click', startHumanVoiceInput);
 }
 
-async function loadAgents() {
-    try {
-        const response = await fetch(`${API_BASE_URL}/api/agents/list`);
-        if (response.ok) {
-            const data = await response.json();
-            if (data.status === 'success') {
-                populateAgentDropdowns(data.agents);
-                console.log('Agents loaded successfully:', data.total_agents, 'agents');
+        async function loadAgents() {
+            try {
+                const response = await fetch(`${API_BASE_URL}/api/agents/list`);
+                if (response.ok) {
+                    const data = await response.json();
+                    if (data.status === 'success') {
+                        populateAgentDropdowns(data.agents);
+                        updateStatus('agents-status', 'connected', `${data.total_agents} agents loaded`);
+                        console.log('Agents loaded successfully:', data.total_agents, 'agents');
+                    }
+                }
+            } catch (error) {
+                updateStatus('agents-status', 'disconnected', 'Agent loading error');
+                console.error('Failed to load agents:', error);
             }
         }
-    } catch (error) {
-        console.error('Failed to load agents:', error);
-    }
-}
 
 function populateAgentDropdowns(agents) {
     const agentASelect = document.getElementById('agent-a-select');
