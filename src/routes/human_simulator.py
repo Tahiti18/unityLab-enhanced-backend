@@ -440,4 +440,12 @@ def simulator_status():
         },
         "timestamp": datetime.now().isoformat()
     })
+@human_simulator_bp.route('/status', methods=['GET'])
+def status():
+    return jsonify({
+        'status': 'active',
+        'mode': 'human_simulator',
+        'version': '1.0',
+        'available': True
+    }), 200
 
