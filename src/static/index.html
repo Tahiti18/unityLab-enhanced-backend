@@ -3766,7 +3766,7 @@ async function startSession() {
         // Use Agent A if selected, otherwise use Agent B, otherwise use default
         const agentId = selectedAgentA || selectedAgentB || 'gpt-4o';
 
-        console.log('📤 Sending request to:', API_BASE_URL + '/api/agents/chat');
+        console.log('📤 Sending request to:', API_BASE_URL + '/api/agents');
         console.log('🤖 Agent ID:', agentId);
         console.log('💬 Prompt:', prompt);
         console.log('🎨 Style:', style);
@@ -3780,7 +3780,7 @@ async function startSession() {
         }
 
         // Make API call to backend
-        const response = await fetch(API_BASE_URL + '/api/agents/chat', {
+        const response = await fetch(API_BASE_URL + '/api/agents', {
             method: 'POST',
             headers: {
                 'Content-Type': 'application/json',
@@ -4017,7 +4017,7 @@ async function nextStep() {
     }
     
     try {
-        const response = await fetch(`${API_BASE_URL}/api/agents/chat`, {
+        const response = await fetch(`${API_BASE_URL}/api/agents`, {
             method: 'POST',
             headers: { 
                 'Content-Type': 'application/json',
