@@ -32,15 +32,16 @@ CORS(app, origins=[
     'https://incomparable-cascaron-dd9815.netlify.app',
     'https://jazzy-shortbread-e3aee3.netlify.app',
     'https://dancing-meerkat-41c610.netlify.app',
-    'https://helpful-jalebi-df5d7d.netlify.app'
+    'https://helpful-jalebi-df5d7d.netlify.app',
+    'https://superlative-gecko-f59930.netlify.app'
 ], allow_headers=['Content-Type', 'Authorization', 'x-user-id'])
 
-# Register all blueprints (ENHANCED SYSTEM)
-app.register_blueprint(agents_bp, url_prefix='/api')
+# Register all blueprints (FIXED URL PREFIXES)
+app.register_blueprint(agents_bp, url_prefix='/api/agents')
 app.register_blueprint(human_simulator_bp, url_prefix='/api/human-simulator')
 app.register_blueprint(revolutionary_relay_bp, url_prefix='/api/revolutionary-relay')
 app.register_blueprint(payments_bp, url_prefix='/api/payments')
-app.register_blueprint(ai_pair_system_bp, url_prefix='/api/ai-pair-system')
+app.register_blueprint(ai_pair_system_bp, url_prefix='/api/repair-system')  # Fixed: repair-system instead of ai-pair-system
 app.register_blueprint(conference_system_bp, url_prefix='/api/conference-system')
 
 # Legacy endpoints for backward compatibility
@@ -141,4 +142,3 @@ if __name__ == '__main__':
     print("🏆 READY FOR ULTIMATE AI COLLABORATION!")
     
     app.run(host='0.0.0.0', port=port, debug=debug)
-
