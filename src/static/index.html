@@ -3780,7 +3780,7 @@ async function startSession() {
         }
 
         // Make API call to backend
-        const response = await fetch(API_BASE_URL + '/api/agents/list', {
+        const response = await fetch(API_BASE_URL + '/api/agents/chat', {
             method: 'POST',
             headers: {
                 'Content-Type': 'application/json',
@@ -4017,7 +4017,7 @@ async function nextStep() {
     }
     
     try {
-        const response = await fetch(`${API_BASE_URL}/api/agents/list`, {
+        const response = await fetch(`${API_BASE_URL}//api/agents/chat`, {
             method: 'POST',
             headers: { 
                 'Content-Type': 'application/json',
