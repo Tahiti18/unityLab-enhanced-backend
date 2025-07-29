@@ -438,4 +438,30 @@ def get_relay_agents():
         'current_working': RELAY_AGENTS[:10],
         'revolutionary_additional': RELAY_AGENTS[10:]
     })
+    @revolutionary_relay_bp.route('/status', methods=['GET'])
+def relay_status():
+    """Return the status of the Revolutionary Relay system."""
+    active_count = len([s for s in active_sessions.values() if s.get('status') != 'completed'])
+    completed_count = len([s for s in active_sessions.values() if s.get('status') == 'completed'])
+    
+    return jsonify({
+        "status": "active",
+        "name": "Revolutionary Relay",
+        "version": "1.0.0",
+        "features": [
+            "expert-panel",
+            "conference-chain",
+            "multi-agent-coordination"
+        ],
+        "sessions": {
+            "active": active_count,
+            "completed": completed_count,
+            "total": len(active_sessions)
+        },
+        "agents": {
+            "total": len(RELAY_AGENTS)
+        },
+        "timestamp": datetime.now().isoformat()
+    })
+
 
