@@ -16,7 +16,6 @@
             --bg-dark: #0a0f1c;
             --bg-darker: #060b14;
             --bg-card: rgba(15, 23, 42, 0.8);
-            --bg-secondary: rgba(30, 41, 59, 0.8);
             --border-color: rgba(59, 130, 246, 0.2);
             --separator-color: rgba(248, 250, 252, 0.8);
             --icon-contrast: rgba(248, 250, 252, 0.9);
@@ -26,8 +25,6 @@
             --success: #10b981;
             --warning: #f59e0b;
             --error: #ef4444;
-            --accent-primary: #00B4D8;
-            --accent-secondary: #0077B6;
         }
 
         * {
@@ -41,7 +38,7 @@
             background: linear-gradient(135deg, var(--bg-darker) 0%, var(--bg-dark) 100%);
             color: var(--text-primary);
             min-height: 100vh;
-            padding-top: 110px;
+            padding-top: 100px;
         }
 
         .navbar {
@@ -68,11 +65,11 @@
         }
 
         .logo-icon {
-            width: 90px !important;
-            height: 90px !important;
-            max-width: 90px !important;
-            max-height: 90px !important;
-        }
+    width: 90px !important;
+    height: 90px !important;
+    max-width: 90px !important;
+    max-height: 90px !important;
+}
 
         .logo-icon:hover {
             filter: drop-shadow(0 0 20px rgba(0, 180, 216, 0.6));
@@ -279,24 +276,25 @@
         }
 
         .upgrade-btn {
-            background: linear-gradient(135deg, var(--logo-primary), var(--logo-secondary));
+            background: linear-gradient(135deg, var(--accent-primary), var(--accent-secondary));
             border: none;
-            border-radius: 20px;
-            padding: 10px 20px;
+            border-radius: 16px;
+            padding: 6px 12px;
             color: white;
-            font-size: 14px;
+            font-size: 12px;
             font-weight: 600;
             cursor: pointer;
             transition: all 0.3s ease;
             display: flex;
             align-items: center;
-            gap: 6px;
-            box-shadow: 0 4px 12px rgba(0, 180, 216, 0.3);
+            gap: 4px;
+            box-shadow: 0 2px 8px rgba(0, 180, 216, 0.3);
         }
 
         .upgrade-btn:hover {
-            transform: translateY(-2px);
-            box-shadow: 0 8px 24px rgba(0, 180, 216, 0.4);
+            transform: translateY(-1px);
+            box-shadow: 0 4px 12px rgba(0, 180, 216, 0.4);
+            background: linear-gradient(135deg, var(--accent-secondary), var(--accent-primary));
         }
 
         .main-content {
@@ -352,92 +350,419 @@
             font-size: 18px;
         }
 
-        /* ORCHESTRATION MODE */
-        .orchestration-grid {
-            display: grid;
-            grid-template-columns: repeat(5, 1fr);
-            gap: 20px;
-            margin-bottom: 32px;
+        /* ===== CLEAN SECTION HELP SYSTEM ===== */
+        .section-help {
+            position: relative;
+            display: inline-block;
         }
 
-        .orchestration-btn {
-            background: rgba(255, 255, 255, 0.05);
-            border: 1px solid var(--border-color);
-            border-radius: 16px;
-            padding: 24px 16px;
-            text-align: center;
+        .help-button {
+            display: flex;
+            align-items: center;
+            justify-content: center;
+            width: 24px;
+            height: 24px;
+            background: rgba(0, 180, 216, 0.15);
+            border: 1px solid rgba(0, 180, 216, 0.3);
+            border-radius: 6px;
+            color: var(--logo-primary);
+            font-size: 12px;
             cursor: pointer;
             transition: all 0.3s ease;
-            color: var(--text-primary);
+            opacity: 0.7;
         }
 
-        .orchestration-btn:hover {
-            background: rgba(0, 180, 216, 0.1);
+        .help-button:hover {
+            background: rgba(0, 180, 216, 0.25);
             border-color: var(--logo-primary);
-            transform: translateY(-2px);
+            opacity: 1;
+            transform: scale(1.05);
         }
 
-        .orchestration-btn.active {
-            background: linear-gradient(135deg, var(--logo-primary), var(--logo-secondary));
-            border-color: var(--logo-primary);
-            color: white;
-            box-shadow: 0 8px 24px rgba(0, 180, 216, 0.3);
+        .help-panel {
+            position: absolute;
+            top: 100%;
+            right: 0;
+            margin-top: 8px;
+            width: 400px;
+            max-width: 90vw;
+            background: rgba(15, 23, 42, 0.98);
+            backdrop-filter: blur(20px);
+            border: 1px solid var(--border-color);
+            border-radius: 12px;
+            padding: 20px;
+            box-shadow: 0 16px 48px rgba(0, 0, 0, 0.6);
+            opacity: 0;
+            visibility: hidden;
+            transform: translateY(-10px);
+            transition: all 0.3s ease;
+            z-index: 999999;
         }
 
-        .orchestration-icon {
-            font-size: 32px;
-            margin-bottom: 12px;
+        /* Fix for top 3 tooltips that go underneath other elements */
+        #orchestration-help.help-panel.active,
+        #prompt-help.help-panel.active,
+        #advisor-help.help-panel.active {
+            position: fixed !important;
+            top: auto !important;
+            bottom: 20px !important;
+            right: 20px !important;
+            z-index: 999999 !important;
+        }
+
+        .help-panel.active {
+            opacity: 1;
+            visibility: visible;
+            transform: translateY(0);
+        }
+
+        .help-panel h3 {
             color: var(--logo-primary);
-        }
-
-        .orchestration-btn.active .orchestration-icon {
-            color: white;
-        }
-
-        .orchestration-title {
             font-size: 16px;
             font-weight: 600;
-            margin-bottom: 8px;
+            margin-bottom: 12px;
+            border-bottom: 1px solid var(--border-color);
+            padding-bottom: 8px;
         }
 
-        .orchestration-subtitle {
+        .help-item {
+            margin-bottom: 12px;
+            padding-bottom: 8px;
+            border-bottom: 1px solid rgba(59, 130, 246, 0.1);
+        }
+
+        .help-item:last-child {
+            margin-bottom: 0;
+            padding-bottom: 0;
+            border-bottom: none;
+        }
+
+        .help-item-title {
+            font-weight: 600;
+            color: var(--text-primary);
+            font-size: 13px;
+            margin-bottom: 4px;
+        }
+
+        .help-item-desc {
             font-size: 12px;
             color: var(--text-secondary);
             line-height: 1.4;
         }
 
-        .orchestration-btn.active .orchestration-subtitle {
-            color: rgba(255, 255, 255, 0.8);
+        /* ===== VOICE DICTATION BUTTON ===== */
+        .voice-btn {
+            position: relative;
+            width: 40px;
+            height: 40px;
+            background: rgba(0, 180, 216, 0.1);
+            border: 1px solid var(--logo-primary);
+            border-radius: 50%;
+            color: var(--logo-primary);
+            cursor: pointer;
+            transition: all 0.3s ease;
+            display: flex;
+            align-items: center;
+            justify-content: center;
         }
 
-        /* CONVERSATION CONTROL CENTER */
-        .control-grid {
-            display: grid;
-            grid-template-columns: 2fr 1fr;
-            gap: 20px;
-            margin-bottom: 20px;
+        .voice-btn:hover {
+            background: rgba(0, 180, 216, 0.2);
+            transform: scale(1.05);
         }
 
+        .voice-btn.recording {
+            background: rgba(239, 68, 68, 0.2);
+            border-color: var(--error);
+            color: var(--error);
+            animation: pulse 1s infinite;
+        }
+
+        .voice-btn.recording::after {
+            content: '';
+            position: absolute;
+            width: 100%;
+            height: 100%;
+            border: 2px solid var(--error);
+            border-radius: 50%;
+            animation: ripple 1s infinite;
+        }
+
+        @keyframes ripple {
+            0% {
+                transform: scale(1);
+                opacity: 1;
+            }
+            100% {
+                transform: scale(1.4);
+                opacity: 0;
+            }
+        }
+
+        .btn {
+            display: inline-flex;
+            align-items: center;
+            justify-content: center;
+            gap: 8px;
+            padding: 12px 24px;
+            border: none;
+            border-radius: 10px;
+            font-family: 'Playfair Display', serif;
+            font-size: 14px;
+            font-weight: 500;
+            text-decoration: none;
+            cursor: pointer;
+            transition: all 0.3s ease;
+            position: relative;
+            overflow: hidden;
+            box-shadow: 0 2px 8px rgba(0, 0, 0, 0.2), 0 0 0 1px rgba(255, 255, 255, 0.05);
+        }
+
+        .btn::before {
+            content: '';
+            position: absolute;
+            top: 0;
+            left: -100%;
+            width: 100%;
+            height: 100%;
+            background: linear-gradient(90deg, transparent, rgba(255, 255, 255, 0.1), transparent);
+            transition: left 0.5s ease;
+        }
+
+        .btn:hover::before {
+            left: 100%;
+        }
+
+        .btn-primary {
+            background: linear-gradient(135deg, var(--logo-primary), var(--logo-secondary));
+            color: white;
+            box-shadow: 0 4px 16px rgba(0, 180, 216, 0.3), 0 0 0 1px rgba(0, 180, 216, 0.2);
+        }
+
+        .btn-primary:hover {
+            transform: translateY(-2px);
+            box-shadow: 0 8px 24px rgba(0, 180, 216, 0.4), 0 0 0 1px rgba(0, 180, 216, 0.3);
+        }
+
+        .btn-secondary {
+            background: rgba(75, 85, 99, 0.5);
+            color: var(--text-secondary);
+            border: 1px solid rgba(75, 85, 99, 0.7);
+            box-shadow: 0 2px 8px rgba(0, 0, 0, 0.2), 0 0 0 1px rgba(255, 255, 255, 0.05);
+        }
+
+        .btn-secondary:hover {
+            background: rgba(75, 85, 99, 0.8);
+            color: var(--text-primary);
+            transform: translateY(-1px);
+            box-shadow: 0 4px 12px rgba(0, 0, 0, 0.3), 0 0 0 1px rgba(255, 255, 255, 0.1);
+        }
+
+        .btn-secondary.active {
+            background: linear-gradient(135deg, var(--logo-primary), var(--logo-secondary));
+            color: white;
+            box-shadow: 0 4px 16px rgba(0, 180, 216, 0.3), 0 0 0 1px rgba(0, 180, 216, 0.2);
+        }
+
+        .agent-container {
+            position: relative;
+            transition: all 0.3s ease;
+        }
+
+        .agent-container.active {
+            animation: agentPulse 2s infinite;
+        }
+
+        @keyframes agentPulse {
+            0%, 100% {
+                border-color: var(--logo-primary);
+                box-shadow: 0 0 20px rgba(0, 180, 216, 0.3), 0 0 0 1px rgba(0, 180, 216, 0.2);
+            }
+            50% {
+                border-color: var(--logo-accent);
+                box-shadow: 0 0 30px rgba(0, 212, 199, 0.5), 0 0 0 1px rgba(0, 212, 199, 0.3);
+            }
+        }
+
+        .agent-header {
+            display: flex;
+            align-items: center;
+            justify-content: space-between;
+            margin-bottom: 16px;
+        }
+
+        .agent-title {
+            font-family: 'Playfair Display', serif;
+            font-size: 18px;
+            font-weight: 600;
+            color: var(--logo-primary);
+            display: flex;
+            align-items: center;
+            gap: 8px;
+        }
+
+        .agent-title i {
+            color: var(--icon-contrast);
+            font-size: 18px;
+        }
+
+        .agent-status {
+            font-size: 13px;
+            font-weight: 500;
+            padding: 4px 12px;
+            border-radius: 12px;
+            background: rgba(16, 185, 129, 0.1);
+            color: var(--success);
+            border: 1px solid var(--success);
+        }
+
+        .agent-status.working {
+            background: rgba(245, 158, 11, 0.1);
+            color: var(--warning);
+            border-color: var(--warning);
+        }
+
+        .agent-status.error {
+            background: rgba(239, 68, 68, 0.1);
+            color: var(--error);
+            border-color: var(--error);
+        }
+
+        .toolbar-btn {
+            width: 36px;
+            height: 36px;
+            display: flex;
+            align-items: center;
+            justify-content: center;
+            background: rgba(75, 85, 99, 0.3);
+            border: 1px solid rgba(75, 85, 99, 0.5);
+            border-radius: 8px;
+            color: var(--icon-contrast);
+            cursor: pointer;
+            transition: all 0.3s ease;
+            box-shadow: 0 2px 4px rgba(0, 0, 0, 0.1);
+        }
+
+        .toolbar-btn:hover {
+            background: rgba(0, 180, 216, 0.2);
+            border-color: var(--logo-primary);
+            color: var(--logo-primary);
+            transform: translateY(-1px);
+            box-shadow: 0 4px 8px rgba(0, 0, 0, 0.2);
+        }
+
+        /* ===== ENHANCED MOBILE RESPONSIVENESS ===== */
+        @media (max-width: 768px) {
+            .navbar {
+                height: 80px;
+                padding: 12px 16px;
+            }
+            
+            .logo-section {
+                margin-right: 16px;
+            }
+            
+            .nav-menu {
+                gap: 20px;
+            }
+            
+            .nav-menu .nav-link {
+                padding: 8px 12px;
+                font-size: 14px;
+            }
+            
+            .main-content {
+                padding: 20px 16px;
+                gap: 24px;
+            }
+            
+            .card {
+                padding: 16px;
+            }
+            
+            .help-panel {
+                width: 320px;
+            }
+            
+            .btn {
+                padding: 10px 16px;
+                font-size: 13px;
+            }
+            
+            .voice-btn {
+                width: 36px;
+                height: 36px;
+            }
+        }
+
+        @media (max-width: 480px) {
+            body {
+                padding-top: 80px;
+            }
+            
+            .navbar {
+                height: 70px;
+                padding: 8px 12px;
+            }
+            
+            .logo-icon {
+                width: 40px;
+                height: 40px;
+            }
+            
+            .logo-title {
+                font-size: 20px;
+            }
+            
+            .logo-subtitle {
+                font-size: 11px;
+            }
+            
+            .nav-menu {
+                gap: 12px;
+            }
+            
+            .main-content {
+                padding: 16px 12px;
+                gap: 20px;
+            }
+            
+            .card {
+                padding: 12px;
+            }
+            
+            .card-title {
+                font-size: 18px;
+            }
+
+            .help-panel {
+                width: 280px;
+            }
+        }
+
+        /* ===== FORM STYLING ===== */
         .form-group {
             margin-bottom: 20px;
         }
 
         .form-label {
-            display: block;
-            margin-bottom: 8px;
-            font-weight: 600;
-            color: var(--text-primary);
+            display: flex;
+            align-items: center;
+            font-family: 'Playfair Display', serif;
             font-size: 14px;
+            font-weight: 500;
+            color: var(--text-secondary);
+            margin-bottom: 8px;
         }
 
         .form-input {
             width: 100%;
-            padding: 12px;
-            border: 2px solid var(--border-color);
+            padding: 12px 16px;
+            background: rgba(15, 23, 42, 0.8);
+            border: 1px solid var(--border-color);
             border-radius: 8px;
-            background: var(--bg-secondary);
             color: var(--text-primary);
-            font-family: inherit;
+            font-family: 'Playfair Display', serif;
             font-size: 14px;
             transition: all 0.3s ease;
         }
@@ -449,1048 +774,1052 @@
         }
 
         .form-textarea {
-            min-height: 120px;
             resize: vertical;
+            min-height: 100px;
+            font-family: 'Playfair Display', serif;
         }
 
         .form-select {
-            cursor: pointer;
-        }
-
-        .input-with-voice {
-            position: relative;
-        }
-
-        .voice-btn {
-            position: absolute;
-            top: 8px;
-            right: 8px;
-            background: none;
-            border: none;
-            color: var(--text-secondary);
-            font-size: 18px;
-            cursor: pointer;
-            padding: 4px;
-            border-radius: 4px;
-            transition: all 0.3s ease;
-        }
-
-        .voice-btn:hover {
-            color: var(--logo-primary);
-            background: rgba(0, 180, 216, 0.1);
-        }
-
-        .voice-btn.recording {
-            color: var(--error);
-            animation: pulse 1s infinite;
-        }
-
-        /* SESSION CONTROL BUTTONS */
-        .session-controls {
-            display: flex;
-            gap: 12px;
-            margin-bottom: 20px;
-            flex-wrap: wrap;
-        }
-
-        .session-btn {
-            padding: 12px 20px;
-            border: none;
-            border-radius: 8px;
-            font-weight: 600;
-            font-size: 14px;
-            cursor: pointer;
-            transition: all 0.3s ease;
-            display: flex;
-            align-items: center;
-            gap: 8px;
-        }
-
-        .session-btn.primary {
-            background: linear-gradient(135deg, var(--logo-primary), var(--logo-secondary));
-            color: white;
-            box-shadow: 0 4px 12px rgba(0, 180, 216, 0.3);
-        }
-
-        .session-btn.secondary {
-            background: rgba(255, 255, 255, 0.1);
-            color: var(--text-primary);
-            border: 1px solid var(--border-color);
-        }
-
-        .session-btn:hover {
-            transform: translateY(-2px);
-            box-shadow: 0 6px 16px rgba(0, 0, 0, 0.2);
-        }
-
-        .session-btn.secondary:hover {
-            background: linear-gradient(135deg, var(--logo-primary), var(--logo-secondary));
-            border-color: var(--logo-primary);
-            color: white;
-        }
-
-        .session-btn.secondary.active {
-            background: linear-gradient(135deg, var(--logo-primary), var(--logo-secondary));
-            color: white;
-            box-shadow: 0 4px 12px rgba(0, 180, 216, 0.3);
-        }
-
-        /* STATUS CARDS */
-        .status-grid {
-            display: grid;
-            grid-template-columns: repeat(auto-fit, minmax(150px, 1fr));
-            gap: 12px;
-            margin-bottom: 20px;
-        }
-
-        .status-card {
-            background: rgba(255, 255, 255, 0.05);
-            border: 1px solid var(--border-color);
-            border-radius: 8px;
-            padding: 16px;
-            text-align: center;
-        }
-
-        .status-label {
-            font-size: 12px;
-            color: var(--text-muted);
-            margin-bottom: 8px;
-            text-transform: uppercase;
-            letter-spacing: 0.5px;
-        }
-
-        .status-value {
-            font-size: 18px;
-            font-weight: 700;
-            color: var(--text-primary);
-        }
-
-        /* AGENT WINDOWS */
-        .agents-container {
-            display: grid;
-            grid-template-columns: 1fr 1fr;
-            gap: 24px;
-            margin-bottom: 32px;
-        }
-
-        .agent-window {
-            background: var(--bg-card);
-            border: 1px solid var(--border-color);
-            border-radius: 16px;
-            padding: 24px;
-            backdrop-filter: blur(12px);
-            transition: all 0.3s ease;
-        }
-
-        .agent-window:hover {
-            border-color: var(--logo-primary);
-            box-shadow: 0 4px 16px rgba(0, 180, 216, 0.1);
-        }
-
-        .agent-header {
-            display: flex;
-            justify-content: space-between;
-            align-items: center;
-            margin-bottom: 20px;
-            padding-bottom: 12px;
-            border-bottom: 1px solid var(--border-color);
-        }
-
-        .agent-title-section {
-            display: flex;
-            align-items: center;
-            gap: 12px;
-        }
-
-        .agent-title {
-            font-size: 18px;
-            color: var(--text-primary);
-            margin: 0;
-            font-weight: 600;
-        }
-
-        .agent-status {
-            padding: 6px 12px;
-            border-radius: 20px;
-            font-size: 12px;
-            font-weight: 600;
-            text-transform: uppercase;
-            letter-spacing: 0.5px;
-            background: linear-gradient(135deg, var(--success), #059669);
-            color: white;
-        }
-
-        .agent-controls {
-            margin-bottom: 20px;
-        }
-
-        .agent-select {
             width: 100%;
             padding: 12px 16px;
-            background: var(--bg-secondary);
+            background: rgba(15, 23, 42, 0.8);
             border: 1px solid var(--border-color);
             border-radius: 8px;
             color: var(--text-primary);
+            font-family: 'Playfair Display', serif;
             font-size: 14px;
-            font-family: inherit;
-            outline: none;
             cursor: pointer;
             transition: all 0.3s ease;
-            margin-bottom: 16px;
         }
 
-        .agent-select:focus {
+        .form-select:focus {
+            outline: none;
             border-color: var(--logo-primary);
             box-shadow: 0 0 0 3px rgba(0, 180, 216, 0.1);
         }
 
-        .agent-toolbar {
-            display: flex;
-            gap: 8px;
-            flex-wrap: wrap;
-        }
-
-        .toolbar-btn {
-            width: 36px;
-            height: 36px;
-            background: rgba(255, 255, 255, 0.05);
-            border: 1px solid var(--border-color);
-            border-radius: 8px;
-            color: var(--text-secondary);
-            cursor: pointer;
-            transition: all 0.3s ease;
-            display: flex;
-            align-items: center;
-            justify-content: center;
-            font-size: 14px;
-        }
-
-        .toolbar-btn:hover {
-            background: linear-gradient(135deg, var(--logo-primary), var(--logo-secondary));
-            border-color: var(--logo-primary);
-            color: white;
-            transform: translateY(-1px);
-        }
-
-        .agent-content {
-            min-height: 300px;
-            background: rgba(255, 255, 255, 0.02);
-            border: 1px solid var(--border-color);
-            border-radius: 12px;
-            padding: 20px;
-            display: flex;
-            align-items: center;
-            justify-content: center;
-            text-align: center;
-        }
-
-        .agent-placeholder {
-            color: var(--text-secondary);
-        }
-
-        .placeholder-icon {
-            font-size: 48px;
-            color: var(--text-muted);
-            margin-bottom: 16px;
-            opacity: 0.5;
-        }
-
-        .agent-placeholder h4 {
-            color: var(--text-primary);
-            margin-bottom: 8px;
-            font-size: 16px;
-        }
-
-        .agent-placeholder p {
-            color: var(--text-secondary);
-            font-size: 14px;
-            margin: 0;
-        }
-
-        /* HUMAN SIMULATOR SECTION */
-        .human-simulator-section {
-            background: var(--bg-card);
-            border: 1px solid var(--border-color);
-            border-radius: 16px;
-            padding: 24px;
-            margin-bottom: 32px;
-            backdrop-filter: blur(12px);
-            box-shadow: 0 8px 32px rgba(0, 0, 0, 0.2);
-        }
-
-        .simulator-controls {
+        /* ===== GRID LAYOUTS ===== */
+        .grid-2 {
             display: grid;
             grid-template-columns: 1fr 1fr;
+            gap: 24px;
+        }
+
+        .grid-3 {
+            display: grid;
+            grid-template-columns: repeat(3, 1fr);
             gap: 20px;
-            margin-bottom: 20px;
         }
 
-        .simulator-actions {
-            display: flex;
+        .grid-4 {
+            display: grid;
+            grid-template-columns: repeat(4, 1fr);
+            gap: 16px;
+        }
+
+        .grid-5 {
+            display: grid;
+            grid-template-columns: repeat(5, 1fr);
             gap: 12px;
-            margin-bottom: 20px;
-            flex-wrap: wrap;
         }
 
-        .mode-buttons {
-            display: flex;
-            gap: 8px;
-            margin-bottom: 16px;
-            flex-wrap: wrap;
-        }
-
-        .mode-btn {
-            padding: 8px 16px;
-            border: 1px solid var(--border-color);
-            border-radius: 6px;
-            background: rgba(255, 255, 255, 0.05);
-            color: var(--text-secondary);
-            font-size: 12px;
-            cursor: pointer;
-            transition: all 0.3s ease;
-        }
-
-        .mode-btn:hover {
-            background: rgba(0, 180, 216, 0.1);
-            border-color: var(--logo-primary);
-            color: var(--text-primary);
-        }
-
-        .mode-btn.active {
-            background: linear-gradient(135deg, var(--logo-primary), var(--logo-secondary));
-            border-color: var(--logo-primary);
-            color: white;
-        }
-
-        .clone-development {
-            background: rgba(255, 255, 255, 0.02);
-            border: 1px solid var(--border-color);
-            border-radius: 12px;
-            padding: 20px;
-            margin-bottom: 20px;
-        }
-
-        .clone-stats {
+        .grid-6 {
             display: grid;
-            grid-template-columns: repeat(auto-fit, minmax(120px, 1fr));
-            gap: 16px;
-            margin-bottom: 16px;
-        }
-
-        .clone-stat {
-            text-align: center;
-        }
-
-        .clone-stat-value {
-            font-size: 24px;
-            font-weight: 700;
-            color: var(--logo-primary);
-            margin-bottom: 4px;
-        }
-
-        .clone-stat-label {
-            font-size: 12px;
-            color: var(--text-secondary);
-            text-transform: uppercase;
-            letter-spacing: 0.5px;
-        }
-
-        .confidence-bar {
-            background: rgba(255, 255, 255, 0.1);
-            border-radius: 8px;
-            height: 8px;
-            overflow: hidden;
-            margin-bottom: 8px;
-        }
-
-        .confidence-fill {
-            height: 100%;
-            background: linear-gradient(90deg, var(--logo-primary), var(--logo-secondary));
-            border-radius: 8px;
-            transition: width 0.3s ease;
-            width: 0%;
-        }
-
-        .confidence-status {
-            font-size: 12px;
-            color: var(--text-secondary);
-            text-align: center;
-        }
-
-        /* LIVE CONVERSATION SECTION */
-        .live-conversation-section {
-            background: var(--bg-card);
-            border: 1px solid var(--border-color);
-            border-radius: 16px;
-            padding: 24px;
-            margin-bottom: 32px;
-            backdrop-filter: blur(12px);
-        }
-
-        .conversation-area {
-            min-height: 300px;
-            padding: 20px;
-            border: 1px solid var(--border-color);
-            border-radius: 8px;
-            background: rgba(30, 41, 59, 0.5);
-            display: flex;
-            flex-direction: column;
-            align-items: center;
-            justify-content: center;
-            text-align: center;
-            color: rgba(148, 163, 184, 0.8);
-            font-size: 14px;
-            line-height: 1.6;
-        }
-
-        .conversation-icon {
-            font-size: 48px;
-            color: rgba(71, 85, 105, 0.6);
-            margin-bottom: 12px;
-        }
-
-        .conversation-title {
-            font-size: 16px;
-            font-weight: 600;
-            color: var(--text-primary);
-            margin-bottom: 8px;
-        }
-
-        .conversation-subtitle {
-            font-size: 13px;
-            color: rgba(148, 163, 184, 0.7);
-        }
-
-        /* AI SYNTHESIS SECTION */
-        .synthesis-section {
-            background: var(--bg-card);
-            border: 1px solid var(--border-color);
-            border-radius: 16px;
-            padding: 24px;
-            margin-bottom: 32px;
-            backdrop-filter: blur(12px);
-        }
-
-        .synthesis-area {
-            min-height: 200px;
-            padding: 20px;
-            border: 1px solid var(--border-color);
-            border-radius: 8px;
-            background: rgba(30, 41, 59, 0.5);
-            display: flex;
-            flex-direction: column;
-            align-items: center;
-            justify-content: center;
-            text-align: center;
-            color: rgba(148, 163, 184, 0.8);
-            font-size: 14px;
-            line-height: 1.6;
-        }
-
-        .synthesis-icon {
-            font-size: 48px;
-            color: rgba(71, 85, 105, 0.6);
-            margin-bottom: 12px;
-        }
-
-        .synthesis-title {
-            font-size: 16px;
-            font-weight: 600;
-            color: var(--text-primary);
-            margin-bottom: 8px;
-        }
-
-        .synthesis-subtitle {
-            font-size: 13px;
-            color: rgba(148, 163, 184, 0.7);
-        }
-
-        /* SESSION MEMORY SECTION */
-        .session-memory-section {
-            background: var(--bg-card);
-            border: 1px solid var(--border-color);
-            border-radius: 16px;
-            padding: 24px;
-            margin-bottom: 32px;
-            backdrop-filter: blur(12px);
-        }
-
-        .memory-controls {
-            display: flex;
+            grid-template-columns: repeat(6, 1fr);
             gap: 12px;
-            margin-bottom: 16px;
-            flex-wrap: wrap;
         }
 
-        .memory-btn {
-            padding: 8px 16px;
-            border: 1px solid var(--border-color);
-            border-radius: 6px;
-            background: rgba(30, 41, 59, 0.8);
-            color: var(--text-primary);
-            font-size: 12px;
-            cursor: pointer;
-            transition: all 0.2s ease;
-            display: flex;
-            align-items: center;
-            gap: 6px;
-        }
-
-        .memory-btn:hover {
-            background: rgba(51, 65, 85, 0.8);
-            border-color: var(--logo-primary);
-        }
-
-        .memory-status {
-            padding: 16px;
-            border: 1px solid var(--border-color);
-            border-radius: 8px;
-            background: rgba(30, 41, 59, 0.5);
-            color: rgba(148, 163, 184, 0.8);
-            font-size: 13px;
-            line-height: 1.5;
-        }
-
-        .status-item {
-            display: flex;
-            justify-content: space-between;
-            margin-bottom: 8px;
-        }
-
-        .status-item:last-child {
-            margin-bottom: 0;
-        }
-
-        .status-label {
-            color: var(--text-secondary);
-        }
-
-        .status-value {
-            color: var(--logo-primary);
-            font-weight: 600;
-        }
-
-        /* LIVE DIAGNOSTICS SECTION */
-        .diagnostics-section {
-            background: var(--bg-card);
-            border: 1px solid var(--border-color);
-            border-radius: 16px;
-            padding: 24px;
-            backdrop-filter: blur(12px);
-        }
-
-        .diagnostics-grid {
-            display: grid;
-            grid-template-columns: repeat(auto-fit, minmax(200px, 1fr));
-            gap: 16px;
-            margin-bottom: 20px;
-        }
-
-        .diagnostic-card {
-            padding: 16px;
-            border: 1px solid var(--border-color);
-            border-radius: 8px;
-            background: rgba(30, 41, 59, 0.5);
-            text-align: center;
-        }
-
-        .diagnostic-value {
-            font-size: 24px;
-            font-weight: 700;
-            color: var(--logo-primary);
-            margin-bottom: 4px;
-        }
-
-        .diagnostic-label {
-            font-size: 12px;
-            color: var(--text-secondary);
-            text-transform: uppercase;
-            letter-spacing: 0.5px;
-        }
-
-        .system-status-grid {
-            display: grid;
-            grid-template-columns: 1fr 1fr;
-            gap: 16px;
-        }
-
-        .system-status-card {
-            padding: 16px;
-            border: 1px solid var(--border-color);
-            border-radius: 8px;
-            background: rgba(30, 41, 59, 0.5);
-        }
-
-        .system-status-title {
-            font-size: 14px;
-            font-weight: 600;
-            color: var(--text-primary);
-            margin-bottom: 8px;
-        }
-
-        .system-status-content {
-            font-size: 12px;
-            color: var(--text-secondary);
-            line-height: 1.4;
-        }
-
-        .status-indicator {
-            display: inline-flex;
-            align-items: center;
-            gap: 6px;
-            color: var(--success);
-            font-weight: 600;
-        }
-
-        .status-indicator-dot {
-            width: 8px;
-            height: 8px;
-            border-radius: 50%;
-            background: var(--success);
-        }
-
-        /* HELP SYSTEM */
-        .help-btn {
-            width: 32px;
-            height: 32px;
-            background: rgba(0, 180, 216, 0.1);
-            border: 1px solid var(--logo-primary);
-            border-radius: 50%;
-            color: var(--logo-primary);
-            cursor: pointer;
-            display: flex;
-            align-items: center;
-            justify-content: center;
-            transition: all 0.3s ease;
-        }
-
-        .help-btn:hover {
-            background: var(--logo-primary);
-            color: white;
-            transform: scale(1.1);
-        }
-
-        /* RESPONSIVE DESIGN */
-        @media (max-width: 768px) {
-            .orchestration-grid {
+        /* ===== RESPONSIVE GRID ADJUSTMENTS ===== */
+        @media (max-width: 1024px) {
+            .grid-2 {
+                grid-template-columns: 1fr;
+            }
+            
+            .grid-4 {
                 grid-template-columns: repeat(2, 1fr);
             }
             
-            .control-grid {
-                grid-template-columns: 1fr;
-            }
-            
-            .agents-container {
-                grid-template-columns: 1fr;
-            }
-            
-            .simulator-controls {
-                grid-template-columns: 1fr;
-            }
-            
-            .system-status-grid {
-                grid-template-columns: 1fr;
+            .grid-6 {
+                grid-template-columns: repeat(3, 1fr);
             }
         }
+
+        @media (max-width: 768px) {
+            .plans-grid {
+                grid-template-columns: 1fr;
+                grid-template-rows: auto;
+                max-width: 400px;
+            }
+        }
+
+        /* ===== ENHANCED VISUAL POLISH ===== */
+        .conversation-area {
+            background: rgba(15, 23, 42, 0.8);
+            border: 1px solid var(--border-color);
+            border-radius: 12px;
+            padding: 20px;
+            min-height: 300px;
+            max-height: 500px;
+            overflow-y: auto;
+        }
+
+        .message-bubble {
+            margin-bottom: 16px;
+            padding: 12px 16px;
+            border-radius: 10px;
+            border-left: 4px solid;
+            animation: messageSlide 0.3s ease-out;
+        }
+
+        @keyframes messageSlide {
+            from {
+                opacity: 0;
+                transform: translateX(-20px);
+            }
+            to {
+                opacity: 1;
+                transform: translateX(0);
+            }
+        }
+
+        .message-agent-a {
+            background: rgba(0, 180, 216, 0.1);
+            border-left-color: var(--logo-primary);
+        }
+
+        .message-agent-b {
+            background: rgba(0, 212, 199, 0.1);
+            border-left-color: var(--logo-accent);
+        }
+
+        .message-human {
+            background: rgba(100, 116, 139, 0.1);
+            border-left-color: var(--text-muted);
+        }
+
+        .message-system {
+            background: rgba(16, 185, 129, 0.1);
+            border-left-color: var(--success);
+        }
+
+        /* Orchestration Mode Buttons - New 5-button layout */
+        .orchestration-buttons {
+            display: grid;
+            grid-template-columns: repeat(5, 1fr);
+            gap: 10px;
+            width: 100%;
+        }
+        
+        .orchestration-button {
+            background-color: rgba(30, 41, 59, 0.6);
+            border: 1px solid rgba(59, 130, 246, 0.1);
+            border-radius: 10px;
+            padding: 16px;
+            display: flex;
+            flex-direction: column;
+            align-items: center;
+            text-align: center;
+            transition: all 0.3s ease;
+            cursor: pointer;
+            color: var(--text-secondary);
+        }
+        
+        .orchestration-button.active {
+            background: linear-gradient(135deg, rgba(0, 180, 216, 0.4), rgba(0, 180, 216, 0.2));
+            border-color: var(--logo-primary);
+            color: var(--text-primary);
+        }
+        
+        .orchestration-button:hover {
+            background-color: rgba(30, 41, 59, 0.8);
+            transform: translateY(-2px);
+        }
+        
+        .button-icon {
+            font-size: 20px;
+            margin-bottom: 8px;
+            color: var(--logo-primary);
+        }
+        
+        .button-title {
+            font-weight: 600;
+            font-size: 14px;
+            margin-bottom: 4px;
+        }
+        
+        .button-description {
+            font-size: 11px;
+            opacity: 0.7;
+        }
+
+        /* AI Advisor Controls */
+        .advisor-row {
+            display: flex;
+            align-items: center;
+            gap: 16px;
+        }
+
+        .advisor-row .form-select {
+            flex: 1;
+            max-width: 300px;
+        }
+
+        .message-sender {
+            font-weight: 600;
+            font-size: 13px;
+            color: var(--text-secondary);
+            margin-bottom: 4px;
+        }
+
+        .message-content {
+            color: var(--text-primary);
+            line-height: 1.5;
+            word-wrap: break-word;
+        }
+
+        .message-time {
+            font-size: 11px;
+            color: var(--text-muted);
+            margin-top: 4px;
+            opacity: 0.7;
+        }
+
+        .empty-state {
+            text-align: center;
+            padding: 40px 20px;
+            color: var(--text-muted);
+        }
+
+        .empty-state i {
+            font-size: 48px;
+            margin-bottom: 16px;
+            opacity: 0.3;
+            color: var(--icon-contrast);
+        }
+
+        .empty-state h3 {
+            font-size: 18px;
+            margin-bottom: 8px;
+            color: var(--text-secondary);
+        }
+
+        .empty-state p {
+            font-size: 14px;
+            opacity: 0.8;
+        }
+
+        /* ===== ENHANCED PROMPT INPUT WITH VOICE ===== */
+        .prompt-input-container {
+            position: relative;
+            display: flex;
+            gap: 12px;
+            align-items: flex-end;
+        }
+
+        .prompt-input-container .form-textarea {
+            flex: 1;
+        }
+
+/* Auto-recommendation notification */
+.auto-recommendation-notification {
+    position: fixed;
+    bottom: 20px;
+    right: 20px;
+    background: rgba(16, 185, 129, 0.9);
+    color: white;
+    padding: 12px 20px;
+    border-radius: 8px;
+    box-shadow: 0 4px 12px rgba(0, 0, 0, 0.2);
+    font-size: 14px;
+    z-index: 9999;
+    display: flex;
+    align-items: center;
+    gap: 8px;
+    transition: opacity 0.5s ease;
+    opacity: 1;
+}
+.auto-recommendation-notification i {
+    font-size: 16px;
+}
+
     </style>
 </head>
 <body>
-    <!-- NAVIGATION BAR -->
-    <nav class="navbar">
-        <div class="logo-section">
-            <svg class="logo-icon" viewBox="0 0 100 100" xmlns="http://www.w3.org/2000/svg">
-                <defs>
-                    <linearGradient id="logoGradient" x1="0%" y1="0%" x2="100%" y2="100%">
-                        <stop offset="0%" style="stop-color:#00D4C7;stop-opacity:1" />
-                        <stop offset="50%" style="stop-color:#00B4D8;stop-opacity:1" />
-                        <stop offset="100%" style="stop-color:#0077B6;stop-opacity:1" />
-                    </linearGradient>
-                    <filter id="glow">
-                        <feGaussianBlur stdDeviation="3" result="coloredBlur"/>
-                        <feMerge> 
-                            <feMergeNode in="coloredBlur"/>
-                            <feMergeNode in="SourceGraphic"/>
-                        </feMerge>
-                    </filter>
-                </defs>
-                <circle cx="50" cy="50" r="45" fill="url(#logoGradient)" filter="url(#glow)" opacity="0.9"/>
-                <circle cx="50" cy="50" r="35" fill="none" stroke="rgba(255,255,255,0.3)" stroke-width="1"/>
-                <circle cx="50" cy="50" r="25" fill="none" stroke="rgba(255,255,255,0.5)" stroke-width="1"/>
-                <circle cx="50" cy="50" r="15" fill="none" stroke="rgba(255,255,255,0.7)" stroke-width="1"/>
-                <circle cx="50" cy="50" r="8" fill="rgba(255,255,255,0.9)"/>
-                <path d="M30 30 L70 70 M70 30 L30 70" stroke="rgba(255,255,255,0.6)" stroke-width="2" stroke-linecap="round"/>
-                <path d="M50 20 L50 80 M20 50 L80 50" stroke="rgba(255,255,255,0.4)" stroke-width="1" stroke-linecap="round"/>
-            </svg>
-            <div class="logo-text">
-                <div class="logo-title">UnityLab</div>
-                <div class="logo-subtitle">AI Collaboration on Autopilot</div>
+    <nav class="navbar" style="min-height: 108px; height: 108px; padding: 20px 28px;">
+    <div class="logo-section" style="gap: 16px; margin-right: 36px;">
+        <img src="logo.png" alt="PromptLink Logo" class="logo-icon" style="width: 52px; height: 52px; object-fit: contain; display: block;">
+        <div class="logo-text">
+            <div class="logo-title">UnityLab</div>
+            <div class="logo-subtitle">AI Collaboration on Autopilot</div>
+        </div>
+    </div>
+
+    <div class="nav-menu" style="gap: 24px;">
+        <a href="#" class="nav-link" style="padding: 8px 14px; font-size: 14px;">Platform</a>
+        <a href="#" class="nav-link" style="padding: 8px 14px; font-size: 14px;">About</a>
+        <a href="#" class="nav-link" style="padding: 8px 14px; font-size: 14px;">How It Works</a>
+        <a href="#" class="nav-link" style="padding: 8px 14px; font-size: 14px;">FAQ</a>
+        
+        <div class="dropdown">
+            <div class="nav-link dropdown-toggle" style="padding: 8px 14px; font-size: 14px;">
+                <span>More</span>
+                <i class="fas fa-chevron-down"></i>
+            </div>
+            <div class="dropdown-menu">
+                <a href="#" class="dropdown-item">AI Magna Carta</a>
+                <a href="#" class="dropdown-item">Documentation</a>
+                <a href="#" class="dropdown-item">The Papers</a>
+                <a href="#" class="dropdown-item">8-Day Journey</a>
+                <a href="#" class="dropdown-item">Investors</a>
+                <a href="#" class="dropdown-item">Partners</a>
+                <a href="#" class="dropdown-item">Diagnostic Tools</a>
+                <a href="#" class="dropdown-item">Contact</a>
             </div>
         </div>
-        
-        <div class="nav-menu">
-            <a href="#platform" class="nav-link">Platform</a>
-            <a href="#about" class="nav-link">About</a>
-            <a href="#how-it-works" class="nav-link">How It Works</a>
-            <a href="#faq" class="nav-link">FAQ</a>
-            <div class="dropdown">
-                <div class="nav-link dropdown-toggle">
-                    More <i class="fas fa-chevron-down"></i>
-                </div>
-                <div class="dropdown-menu">
-                    <a href="#pricing" class="dropdown-item">Pricing</a>
-                    <a href="#documentation" class="dropdown-item">Documentation</a>
-                    <a href="#support" class="dropdown-item">Support</a>
-                    <a href="#blog" class="dropdown-item">Blog</a>
-                </div>
-            </div>
+    </div>
+
+    <div class="status-section" style="gap: 20px;">
+        <div class="system-status">
+            <div class="status-dot"></div>
+            <div class="status-text">System Online</div>
         </div>
-        
-        <div class="status-section">
-            <div class="system-status">
-                <div class="status-dot"></div>
-                <span class="status-text">System Online</span>
-            </div>
-            <div class="credits-display">
-                <i class="fas fa-coins credits-icon"></i>
-                <span class="credits-text">Credits: <span class="credits-amount">2,500</span></span>
-            </div>
-            <button class="upgrade-btn">
-                <i class="fas fa-arrow-up"></i>
-                Upgrade
+        <div class="credits-display">
+            <i class="fas fa-coins credits-icon"></i>
+            <div class="credits-text">Credits: <span class="credits-amount">2,500</span></div>
+            <button class="upgrade-btn" onclick="showUpgradeModal()">
+                <i class="fas fa-arrow-up"></i> Upgrade
             </button>
         </div>
-    </nav>
+    </div>
+</nav>
 
-    <!-- MAIN CONTENT -->
-    <div class="main-content">
-        <!-- ORCHESTRATION MODE -->
+    <main class="main-content">
         <section class="card">
             <div class="card-header">
                 <div class="card-title-section">
                     <i class="fas fa-cogs card-icon"></i>
                     <h2 class="card-title">Orchestration Mode</h2>
                 </div>
-                <button class="help-btn" title="Orchestration Mode Guide">
-                    <i class="fas fa-question-circle"></i>
-                </button>
-            </div>
-            
-            <div class="orchestration-grid">
-                <div class="orchestration-btn active" data-mode="manual-relay">
-                    <div class="orchestration-icon">
-                        <i class="fas fa-hand-paper"></i>
+                <div class="section-help">
+                    <div class="help-button" onclick="toggleHelp('orchestration-help')">
+                        <i class="fas fa-question"></i>
                     </div>
-                    <div class="orchestration-title">Manual Relay</div>
-                    <div class="orchestration-subtitle">Human controlled</div>
-                </div>
-                
-                <div class="orchestration-btn" data-mode="autonomous">
-                    <div class="orchestration-icon">
-                        <i class="fas fa-robot"></i>
+                    <div id="orchestration-help" class="help-panel">
+                        <h3>Orchestration Mode Guide</h3>
+                        <div class="help-item">
+                            <div class="help-item-title">Manual Relay</div>
+                            <div class="help-item-desc">You control when each agent responds. Perfect for guided conversations and step-by-step analysis.</div>
+                        </div>
+                        <div class="help-item">
+                            <div class="help-item-title">Autonomous</div>
+                            <div class="help-item-desc">Agents talk to each other automatically for the set number of rounds. Great for exploring ideas and debates.</div>
+                        </div>
+                        <div class="help-item">
+                            <div class="help-item-title">Agent A Only</div>
+                            <div class="help-item-desc">Focus on just Agent A for concentrated analysis. Perfect when you need deep insight from one specific AI model.</div>
+                        </div>
+                        <div class="help-item">
+                            <div class="help-item-title">Agent B Only</div>
+                            <div class="help-item-desc">Focus on just Agent B for concentrated analysis. Perfect when you need deep insight from one specific AI model.</div>
+                        </div>
                     </div>
-                    <div class="orchestration-title">Autonomous</div>
-                    <div class="orchestration-subtitle">AI self-directed</div>
-                </div>
-                
-                <div class="orchestration-btn" data-mode="expert-panel">
-                    <div class="orchestration-icon">
-                        <i class="fas fa-users"></i>
-                    </div>
-                    <div class="orchestration-title">Expert Panel</div>
-                    <div class="orchestration-subtitle">10 expert pairs analysis</div>
-                </div>
-                
-                <div class="orchestration-btn" data-mode="conference-chain">
-                    <div class="orchestration-icon">
-                        <i class="fas fa-link"></i>
-                    </div>
-                    <div class="orchestration-title">Conference Chain</div>
-                    <div class="orchestration-subtitle">Sequential expert analysis</div>
-                </div>
-                
-                <div class="orchestration-btn" data-mode="human-simulator">
-                    <div class="orchestration-icon">
-                        <i class="fas fa-brain"></i>
-                    </div>
-                    <div class="orchestration-title">Human Simulator</div>
-                    <div class="orchestration-subtitle">AI Clone Development</div>
                 </div>
             </div>
+            <div class="orchestration-buttons">
+    <div class="orchestration-button active" data-mode="manual">
+        <i class="fas fa-hand-paper button-icon"></i>
+        <div class="button-title">Manual Relay</div>
+        <div class="button-description">Human controlled</div>
+    </div>
+    <div class="orchestration-button" data-mode="autonomous">
+        <i class="fas fa-robot button-icon"></i>
+        <div class="button-title">Autonomous</div>
+        <div class="button-description">AI self-directed</div>
+    </div>
+    <div class="orchestration-button" data-mode="expert-panel">
+        <i class="fas fa-users button-icon"></i>
+        <div class="button-title">Expert Panel</div>
+        <div class="button-description">10 expert pairs analysis</div>
+    </div>
+    <div class="orchestration-button" data-mode="conference-chain">
+        <i class="fas fa-link button-icon"></i>
+        <div class="button-title">Conference Chain</div>
+        <div class="button-description">Sequential expert analysis</div>
+    </div>
+    <div class="orchestration-button" data-mode="advanced">
+        <i class="fas fa-brain button-icon"></i>
+        <div class="button-title">Human Simulator</div>
+        <div class="button-description">AI Clone Development</div>
+    </div>
+</div>
         </section>
 
-        <!-- CONVERSATION CONTROL CENTER -->
-        <section class="card">
-            <div class="card-header">
-                <div class="card-title-section">
-                    <i class="fas fa-comments card-icon"></i>
-                    <h2 class="card-title">Conversation Control Center</h2>
-                </div>
-                <button class="help-btn" title="Conversation Control Center Guide">
-                    <i class="fas fa-question-circle"></i>
-                </button>
-            </div>
-            
-            <div class="control-grid">
+<!-- ===== SECTION 3: CONVERSATION CONTROL CENTER - FIXED HELP POSITIONING ===== -->
+
+<style>
+/* ===== SECTION 3 SCOPED STYLES - NO GLOBAL CSS ===== */
+.conversation-section .card {
+    background: var(--bg-card);
+    backdrop-filter: blur(12px);
+    border: 1px solid var(--border-color);
+    border-radius: 16px;
+    padding: 24px;
+    box-shadow: 0 8px 32px rgba(0, 0, 0, 0.2), 0 0 0 1px rgba(255, 255, 255, 0.05);
+    transition: all 0.3s ease;
+    position: relative;
+    margin-bottom: 32px;
+}
+
+.conversation-section .card-header {
+    display: flex;
+    align-items: center;
+    justify-content: space-between;
+    margin-bottom: 20px;
+    position: relative;
+}
+
+.conversation-section .card-header h3 {
+    font-family: 'Playfair Display', serif;
+    font-size: 20px;
+    font-weight: 600;
+    color: var(--logo-primary);
+    text-shadow: 0 0 8px rgba(0, 180, 216, 0.2);
+    margin: 0;
+}
+
+.conversation-section .help-btn {
+    display: flex;
+    align-items: center;
+    justify-content: center;
+    width: 24px;
+    height: 24px;
+    background: rgba(0, 180, 216, 0.15);
+    border: 1px solid rgba(0, 180, 216, 0.3);
+    border-radius: 6px;
+    color: var(--logo-primary);
+    font-size: 12px;
+    cursor: pointer;
+    transition: all 0.3s ease;
+    opacity: 0.7;
+}
+
+.conversation-section .help-btn:hover {
+    background: rgba(0, 180, 216, 0.25);
+    border-color: var(--logo-primary);
+    opacity: 1;
+    transform: scale(1.05);
+}
+
+/* ===== FIXED TEXT AREAS - WHITE TEXT ===== */
+.conversation-section textarea {
+    color: var(--text-primary) !important;
+    background: var(--bg-secondary) !important;
+    border: 2px solid var(--border-color) !important;
+}
+
+.conversation-section textarea::placeholder {
+    color: var(--text-muted) !important;
+}
+
+.conversation-section select {
+    color: var(--text-primary) !important;
+    background: var(--bg-secondary) !important;
+}
+
+/* ===== SESSION CONTROL BUTTONS ===== */
+.conversation-section .session-control-btn {
+    padding: 10px 16px;
+    border: none;
+    border-radius: 6px;
+    font-family: inherit;
+    font-size: 14px;
+    font-weight: 600;
+    cursor: pointer;
+    transition: all 0.2s ease;
+    display: flex;
+    align-items: center;
+    gap: 6px;
+    min-width: 120px;
+    justify-content: center;
+}
+
+/* Primary Button (Start Session) - Always Blue */
+.conversation-section .primary-btn {
+    background: linear-gradient(135deg, var(--logo-primary) 0%, var(--logo-secondary) 100%);
+    color: white;
+    box-shadow: 0 2px 4px rgba(0, 212, 199, 0.2);
+}
+
+.conversation-section .primary-btn:hover {
+    transform: translateY(-1px);
+    box-shadow: 0 4px 8px rgba(0, 212, 199, 0.3);
+}
+
+/* Action Buttons (Next Agent, Stop, Clear) - Flash Blue on Click */
+.conversation-section .action-btn {
+    background: var(--bg-secondary);
+    color: var(--text-primary);
+    border: 2px solid var(--border-color);
+}
+
+.conversation-section .action-btn:hover {
+    background: var(--bg-hover);
+    border-color: var(--logo-primary);
+    transform: translateY(-1px);
+}
+
+.conversation-section .action-btn.flash {
+    background: linear-gradient(135deg, var(--logo-primary) 0%, var(--logo-secondary) 100%);
+    color: white;
+    transform: scale(1.05);
+}
+
+/* Toggle Button (Pause) - Stays Blue When Active */
+.conversation-section .toggle-btn {
+    background: var(--bg-secondary);
+    color: var(--text-primary);
+    border: 2px solid var(--border-color);
+}
+
+.conversation-section .toggle-btn:hover {
+    background: var(--bg-hover);
+    border-color: var(--logo-primary);
+    transform: translateY(-1px);
+}
+
+.conversation-section .toggle-btn.active {
+    background: linear-gradient(135deg, var(--logo-primary) 0%, var(--logo-secondary) 100%);
+    color: white;
+    box-shadow: 0 2px 4px rgba(0, 212, 199, 0.2);
+}
+
+/* ===== STATUS CARDS ===== */
+.conversation-section .status-card {
+    background: var(--bg-secondary);
+    border: 2px solid var(--border-color);
+    border-radius: 8px;
+    padding: 12px;
+    text-align: center;
+}
+
+.conversation-section .status-label {
+    font-size: 12px;
+    color: var(--text-secondary);
+    margin-bottom: 4px;
+    font-weight: 600;
+}
+
+.conversation-section .status-value {
+    font-size: 16px;
+    color: var(--text-primary);
+    font-weight: 700;
+}
+
+/* ===== VOICE BUTTONS ===== */
+.conversation-section .voice-btn {
+    position: absolute;
+    top: 8px;
+    right: 8px;
+    background: rgba(0, 180, 216, 0.1);
+    border: 1px solid var(--logo-primary);
+    border-radius: 50%;
+    color: var(--logo-primary);
+    font-size: 18px;
+    cursor: pointer;
+    padding: 8px;
+    width: 36px;
+    height: 36px;
+    display: flex;
+    align-items: center;
+    justify-content: center;
+    transition: all 0.3s ease;
+}
+
+.conversation-section .voice-btn:hover {
+    background: rgba(0, 180, 216, 0.2);
+    transform: scale(1.05);
+}
+
+.conversation-section .voice-btn.listening {
+    background: rgba(239, 68, 68, 0.2);
+    border-color: var(--error);
+    color: var(--error);
+    animation: pulse 1s infinite;
+}
+
+@keyframes pulse {
+    0%, 100% { opacity: 1; }
+    50% { opacity: 0.5; }
+}
+
+/* ===== FIXED HELP PANEL - STAYS WITHIN SECTION ===== */
+.conversation-section .help-panel {
+    position: fixed;
+    top: 50%;
+    left: 50%;
+    transform: translate(-50%, -50%);
+    width: 600px;
+    max-width: 90vw;
+    max-height: 80vh;
+    background: rgba(15, 23, 42, 0.98);
+    backdrop-filter: blur(20px);
+    border: 1px solid var(--border-color);
+    border-radius: 12px;
+    padding: 20px;
+    box-shadow: 0 16px 48px rgba(0, 0, 0, 0.8);
+    opacity: 0;
+    visibility: hidden;
+    transition: all 0.3s ease;
+    z-index: 999999;
+    display: none;
+    overflow-y: auto;
+}
+
+.conversation-section .help-panel.active {
+    opacity: 1;
+    visibility: visible;
+    display: block;
+}
+
+.conversation-section .help-panel h4 {
+    color: var(--logo-primary);
+    font-size: 16px;
+    font-weight: 600;
+    margin-bottom: 16px;
+    border-bottom: 1px solid var(--border-color);
+    padding-bottom: 8px;
+}
+
+.conversation-section .help-panel h5 {
+    color: var(--text-primary);
+    font-size: 14px;
+    font-weight: 600;
+    margin-bottom: 8px;
+}
+
+.conversation-section .help-panel ul {
+    list-style: none;
+    padding: 0;
+    margin: 0;
+}
+
+.conversation-section .help-panel li {
+    margin-bottom: 8px;
+    font-size: 12px;
+    color: var(--text-secondary);
+    line-height: 1.4;
+}
+
+.conversation-section .help-panel strong {
+    color: var(--text-primary);
+}
+</style>
+
+<div class="conversation-section">
+    <div class="card">
+        <div class="card-header">
+            <h3>Conversation Control Center</h3>
+            <button class="help-btn" onclick="toggleConversationHelp('conversation-help')">
+                <i class="fas fa-question-circle"></i>
+            </button>
+        </div>
+        <div class="card-body">
+            <!-- Initial Prompt and Conversation Style Row -->
+            <div style="display: grid; grid-template-columns: 2fr 1fr; gap: 20px; margin-bottom: 20px;">
+                <!-- Initial Prompt -->
                 <div>
-                    <div class="form-group">
-                        <label class="form-label">Conversation Style</label>
-                        <select class="form-input form-select" id="conversation-style">
-                            <option value="">Select a Conversation Style...</option>
-                            <option value="free-discussion">Free Discussion</option>
-                            <option value="brainstorming">Brainstorming</option>
-                            <option value="debate">Debate</option>
-                            <option value="strategy">Strategy</option>
-                            <option value="technical">Technical</option>
-                            <option value="compliance">Compliance</option>
-                        </select>
-                    </div>
-                    
-                    <div class="form-group">
-                        <label class="form-label">Initial Prompt</label>
-                        <div class="input-with-voice">
-                            <textarea class="form-input form-textarea" id="initial-prompt" placeholder="Enter your prompt, question, or topic for AI discussion. Be specific for better results..."></textarea>
-                            <button class="voice-btn" title="Voice Input">
-                                <i class="fas fa-microphone"></i>
-                            </button>
-                        </div>
+                    <label for="initial-prompt" style="display: block; margin-bottom: 8px; font-weight: 600; color: var(--text-primary);">Initial Prompt</label>
+                    <div style="position: relative;">
+                        <textarea 
+                            id="initial-prompt" 
+                            placeholder="Enter your initial prompt or question here..."
+                            style="width: 100%; min-height: 120px; padding: 12px; border: 2px solid var(--border-color); border-radius: 8px; font-family: inherit; font-size: 14px; resize: vertical; background: var(--bg-secondary); color: var(--text-primary);"
+                        ></textarea>
+                        <button class="voice-btn" id="prompt-voice-btn" onclick="toggleVoiceInput('initial-prompt')">
+                            <i class="fas fa-microphone"></i>
+                        </button>
                     </div>
                 </div>
                 
+                <!-- Conversation Style -->
                 <div>
-                    <div class="form-group">
-                        <label class="form-label">Session Controls</label>
-                        <div class="session-controls">
-                            <button class="session-btn primary" id="start-session">
-                                <i class="fas fa-play"></i>
-                                Start Session
-                            </button>
-                            <button class="session-btn secondary" id="next-agent">
-                                <i class="fas fa-forward"></i>
-                                Next Agent
-                            </button>
-                            <button class="session-btn secondary" id="pause-session">
-                                <i class="fas fa-pause"></i>
-                                Pause
-                            </button>
-                            <button class="session-btn secondary" id="stop-session">
-                                <i class="fas fa-stop"></i>
-                                Stop
-                            </button>
-                            <button class="session-btn secondary" id="clear-all">
-                                <i class="fas fa-trash"></i>
-                                Clear All
-                            </button>
-                        </div>
-                    </div>
-                    
-                    <div class="form-group">
-                        <label class="form-label">Set Rounds</label>
-                        <input type="number" class="form-input" id="rounds-input" placeholder="1-25" min="1" max="25" value="5">
-                    </div>
-                    
-                    <div class="status-grid">
-                        <div class="status-card">
-                            <div class="status-label">Completed</div>
-                            <div class="status-value" id="completed-rounds">0</div>
-                        </div>
-                        <div class="status-card">
-                            <div class="status-label">Messages</div>
-                            <div class="status-value" id="message-count">0</div>
-                        </div>
-                        <div class="status-card">
-                            <div class="status-label">Mode</div>
-                            <div class="status-value" id="current-mode">Manual Relay</div>
-                        </div>
-                        <div class="status-card">
-                            <div class="status-label">Status</div>
-                            <div class="status-value" id="session-status">Inactive</div>
-                        </div>
-                        <div class="status-card">
-                            <div class="status-label">Active Agent</div>
-                            <div class="status-value" id="active-agent">-</div>
-                        </div>
-                    </div>
+                    <label for="conversation-style" style="display: block; margin-bottom: 8px; font-weight: 600; color: var(--text-primary);">Conversation Style</label>
+                    <select id="conversation-style" style="width: 100%; padding: 12px; border: 2px solid var(--border-color); border-radius: 8px; font-family: inherit; font-size: 14px; background: var(--bg-secondary); color: var(--text-primary);">
+                        <option value="free-discussion">Free Discussion</option>
+                        <option value="brainstorming">Brainstorming</option>
+                        <option value="debate">Debate</option>
+                        <option value="strategy">Strategy</option>
+                        <option value="technical">Technical</option>
+                        <option value="compliance">Compliance</option>
+                        <option value="creative-writing">Creative Writing</option>
+                        <option value="education-tutoring">Education & Tutoring</option>
+                        <option value="product-development">Product Development</option>
+                    </select>
                 </div>
             </div>
-            
-            <div class="form-group">
-                <label class="form-label">Interjection & Guidance</label>
-                <div class="input-with-voice">
-                    <textarea class="form-input form-textarea" id="interjection-guidance" placeholder="Interject with custom message or guidance..."></textarea>
-                    <button class="voice-btn" title="Voice Input">
+
+            <!-- Session Control Buttons -->
+            <div style="display: flex; gap: 12px; margin-bottom: 20px; flex-wrap: wrap;">
+                <button class="session-control-btn primary-btn" id="start-session-btn" onclick="handleSessionControl('start')">
+                    <i class="fas fa-play"></i> Start Session
+                </button>
+                <button class="session-control-btn action-btn" id="next-agent-btn" onclick="handleSessionControl('next')">
+                    <i class="fas fa-forward"></i> Next Agent
+                </button>
+                <button class="session-control-btn toggle-btn" id="pause-btn" onclick="handleSessionControl('pause')">
+                    <i class="fas fa-pause"></i> Pause
+                </button>
+                <button class="session-control-btn action-btn" id="stop-btn" onclick="handleSessionControl('stop')">
+                    <i class="fas fa-stop"></i> Stop
+                </button>
+                <button class="session-control-btn action-btn" id="clear-all-btn" onclick="handleSessionControl('clear')">
+                    <i class="fas fa-trash"></i> Clear All
+                </button>
+            </div>
+
+            <!-- Status Cards -->
+            <div style="display: grid; grid-template-columns: repeat(auto-fit, minmax(150px, 1fr)); gap: 12px; margin-bottom: 20px;">
+                <div class="status-card">
+                    <div class="status-label">Set Rounds</div>
+                    <div class="status-value" id="set-rounds">5</div>
+                </div>
+                <div class="status-card">
+                    <div class="status-label">Completed</div>
+                    <div class="status-value" id="completed-rounds">0</div>
+                </div>
+                <div class="status-card">
+                    <div class="status-label">Messages</div>
+                    <div class="status-value" id="message-count">0</div>
+                </div>
+                <div class="status-card">
+                    <div class="status-label">Mode</div>
+                    <div class="status-value" id="current-mode">Manual Relay</div>
+                </div>
+                <div class="status-card">
+                    <div class="status-label">Status</div>
+                    <div class="status-value" id="session-status">Inactive</div>
+                </div>
+                <div class="status-card">
+                    <div class="status-label">Active Agent</div>
+                    <div class="status-value" id="active-agent">-</div>
+                </div>
+            </div>
+
+            <!-- Interjection & Guidance -->
+            <div>
+                <label for="interjection-guidance" style="display: block; margin-bottom: 8px; font-weight: 600; color: var(--text-primary);">Interjection & Guidance</label>
+                <div style="position: relative;">
+                    <textarea 
+                        id="interjection-guidance" 
+                        placeholder="Add interjections or guidance during the conversation..."
+                        style="width: 100%; min-height: 80px; padding: 12px; border: 2px solid var(--border-color); border-radius: 8px; font-family: inherit; font-size: 14px; resize: vertical; background: var(--bg-secondary); color: var(--text-primary);"
+                    ></textarea>
+                    <button class="voice-btn" id="interjection-voice-btn" onclick="toggleVoiceInput('interjection-guidance')">
                         <i class="fas fa-microphone"></i>
                     </button>
                 </div>
             </div>
-        </section>
+        </div>
 
-        <!-- AGENT WINDOWS -->
-        <div class="agents-container">
-            <div class="agent-window">
-                <div class="agent-header">
-                    <div class="agent-title-section">
-                        <i class="fas fa-robot card-icon"></i>
-                        <h3 class="agent-title">Agent A</h3>
-                    </div>
-                    <div class="agent-status">Ready</div>
-                    <button class="help-btn" title="Agent A Guide">
-                        <i class="fas fa-question-circle"></i>
-                    </button>
+        <!-- Help Panel - FIXED POSITIONING -->
+        <div id="conversation-help" class="help-panel">
+            <h4>Conversation Control Center Guide</h4>
+            <div style="display: grid; grid-template-columns: repeat(auto-fit, minmax(250px, 1fr)); gap: 16px;">
+                <div>
+                    <h5>Initial Prompt</h5>
+                    <ul>
+                        <li><strong>Purpose:</strong> Enter your starting message here. This will be the foundation for the AI conversation.</li>
+                        <li><strong>Best Practice:</strong> Be specific about what you want to explore or discuss.</li>
+                        <li><strong>Voice Input:</strong> Click the microphone to dictate your prompt hands-free.</li>
+                    </ul>
                 </div>
-                
-                <div class="agent-controls">
-                    <select class="agent-select" id="agent-a-select">
-                        <option value="">Select Agent A...</option>
-                        <option value="gpt-4o">GPT-4o</option>
-                        <option value="chatgpt-4-turbo">ChatGPT 4 Turbo</option>
-                        <option value="gemini-2-flash">Gemini 2.0 Flash</option>
-                        <option value="meta-llama-3-3">Meta Llama 3.3</option>
-                        <option value="deepseek-r1">DeepSeek R1</option>
-                        <option value="wizardlm-2">WizardLM 2</option>
-                        <option value="mixtral-8x22b">Mixtral 8x22B</option>
-                        <option value="neural-chat">Neural Chat</option>
-                        <option value="gemini-pro-1-5">Gemini Pro 1.5</option>
-                        <option value="yi-large">Yi Large</option>
-                        <option value="nous-hermes-3">Nous Hermes 3</option>
-                        <option value="dolphin-mixtral">Dolphin Mixtral</option>
-                        <option value="perplexity-pro">Perplexity Pro</option>
-                        <option value="command-r-plus">Command R+</option>
-                        <option value="qwen-2-5-72b">Qwen 2.5 72B</option>
-                        <option value="openhermes-2-5">OpenHermes 2.5</option>
-                        <option value="mistral-large">Mistral Large</option>
-                        <option value="llama-3-3-70b">Llama 3.3 70B</option>
-                        <option value="starling-7b">Starling 7B</option>
-                        <option value="claude-3-5-sonnet">Claude 3.5 Sonnet</option>
-                    </select>
-                    
-                    <div class="agent-toolbar">
-                        <button class="toolbar-btn" title="Reset Agent A">
-                            <i class="fas fa-redo"></i>
-                        </button>
-                        <button class="toolbar-btn" title="Refresh Agent A">
-                            <i class="fas fa-sync"></i>
-                        </button>
-                        <button class="toolbar-btn" title="Copy Response">
-                            <i class="fas fa-copy"></i>
-                        </button>
-                        <button class="toolbar-btn" title="Edit Response">
-                            <i class="fas fa-edit"></i>
-                        </button>
-                        <button class="toolbar-btn" title="Download Response">
-                            <i class="fas fa-download"></i>
-                        </button>
-                        <button class="toolbar-btn" title="Agent Settings">
-                            <i class="fas fa-cog"></i>
-                        </button>
-                    </div>
+                <div>
+                    <h5>Conversation Styles</h5>
+                    <ul>
+                        <li><strong>Free Discussion:</strong> Open-ended conversation flow</li>
+                        <li><strong>Brainstorming:</strong> Creative idea generation mode</li>
+                        <li><strong>Debate:</strong> Structured argumentation format</li>
+                        <li><strong>Strategy:</strong> Strategic planning and analysis</li>
+                        <li><strong>Technical:</strong> Technical problem-solving focus</li>
+                        <li><strong>Compliance:</strong> Regulatory and compliance discussions</li>
+                    </ul>
                 </div>
-                
-                <div class="agent-content">
-                    <div class="agent-placeholder">
-                        <div class="placeholder-icon">
-                            <i class="fas fa-comment-dots"></i>
-                        </div>
-                        <h4>Agent A ready for collaboration</h4>
-                        <p>Select an agent and start a session to begin!</p>
-                    </div>
+                <div>
+                    <h5>Session Controls</h5>
+                    <ul>
+                        <li><strong>Start Session:</strong> Begin conversation with selected agents</li>
+                        <li><strong>Next Agent:</strong> Manually advance to next agent in sequence</li>
+                        <li><strong>Pause:</strong> Temporarily halt the session (stays blue when paused)</li>
+                        <li><strong>Stop:</strong> End the current session completely</li>
+                        <li><strong>Clear All:</strong> Reset all inputs and session status</li>
+                    </ul>
+                </div>
+                <div>
+                    <h5>Voice Input</h5>
+                    <ul>
+                        <li><strong>Activation:</strong> Click microphone buttons to start voice dictation</li>
+                        <li><strong>Visual Feedback:</strong> Button turns red and pulses while listening</li>
+                        <li><strong>Usage:</strong> Perfect for hands-free operation when adding guidance</li>
+                        <li><strong>Ready for Backend:</strong> Prepared for real speech recognition integration</li>
+                    </ul>
                 </div>
             </div>
-            
-            <div class="agent-window">
-                <div class="agent-header">
-                    <div class="agent-title-section">
-                        <i class="fas fa-robot card-icon"></i>
-                        <h3 class="agent-title">Agent B</h3>
-                    </div>
-                    <div class="agent-status">Ready</div>
-                    <button class="help-btn" title="Agent B Guide">
-                        <i class="fas fa-question-circle"></i>
-                    </button>
+        </div>
+    </div>
+</div>
+
+<script>
+// Session state management
+let conversationSessionState = {
+    isActive: false,
+    isPaused: false,
+    currentRounds: 0,
+    messageCount: 0,
+    activeAgent: null
+};
+
+// Handle session control button clicks
+function handleSessionControl(action) {
+    const button = document.getElementById(`${action === 'start' ? 'start-session' : action === 'next' ? 'next-agent' : action}-btn`);
+    
+    switch(action) {
+        case 'start':
+            startConversationSession();
+            break;
+        case 'next':
+            flashConversationButton(button);
+            nextConversationAgent();
+            break;
+        case 'pause':
+            toggleConversationPause(button);
+            break;
+        case 'stop':
+            flashConversationButton(button);
+            stopConversationSession();
+            break;
+        case 'clear':
+            flashConversationButton(button);
+            clearConversationAll();
+            break;
+    }
+}
+
+// Flash effect for action buttons
+function flashConversationButton(button) {
+    button.classList.add('flash');
+    setTimeout(() => {
+        button.classList.remove('flash');
+    }, 200);
+}
+
+// Toggle pause state
+function toggleConversationPause(button) {
+    conversationSessionState.isPaused = !conversationSessionState.isPaused;
+    
+    if (conversationSessionState.isPaused) {
+        button.classList.add('active');
+        button.innerHTML = '<i class="fas fa-play"></i> Resume';
+        updateConversationStatus('Paused');
+    } else {
+        button.classList.remove('active');
+        button.innerHTML = '<i class="fas fa-pause"></i> Pause';
+        updateConversationStatus('Active');
+    }
+}
+
+// Session control functions
+function startConversationSession() {
+    conversationSessionState.isActive = true;
+    conversationSessionState.isPaused = false;
+    updateConversationStatus('Active');
+    updateConversationActiveAgent('GPT-4o');
+    console.log('Conversation session started');
+}
+
+function nextConversationAgent() {
+    if (conversationSessionState.isActive) {
+        conversationSessionState.currentRounds++;
+        conversationSessionState.messageCount++;
+        updateConversationCompletedRounds(conversationSessionState.currentRounds);
+        updateConversationMessageCount(conversationSessionState.messageCount);
+        console.log('Next conversation agent triggered');
+    }
+}
+
+function stopConversationSession() {
+    conversationSessionState.isActive = false;
+    conversationSessionState.isPaused = false;
+    updateConversationStatus('Inactive');
+    updateConversationActiveAgent('-');
+    
+    // Reset pause button
+    const pauseBtn = document.getElementById('pause-btn');
+    pauseBtn.classList.remove('active');
+    pauseBtn.innerHTML = '<i class="fas fa-pause"></i> Pause';
+    
+    console.log('Conversation session stopped');
+}
+
+function clearConversationAll() {
+    // Reset all inputs
+    document.getElementById('initial-prompt').value = '';
+    document.getElementById('interjection-guidance').value = '';
+    document.getElementById('conversation-style').value = 'free-discussion';
+    
+    // Reset session state
+    conversationSessionState = {
+        isActive: false,
+        isPaused: false,
+        currentRounds: 0,
+        messageCount: 0,
+        activeAgent: null
+    };
+    
+    // Reset UI
+    updateConversationStatus('Inactive');
+    updateConversationActiveAgent('-');
+    updateConversationCompletedRounds(0);
+    updateConversationMessageCount(0);
+    
+    // Reset pause button
+    const pauseBtn = document.getElementById('pause-btn');
+    pauseBtn.classList.remove('active');
+    pauseBtn.innerHTML = '<i class="fas fa-pause"></i> Pause';
+    
+    console.log('All conversation data cleared');
+}
+
+// Status update functions
+function updateConversationStatus(status) {
+    document.getElementById('session-status').textContent = status;
+}
+
+function updateConversationActiveAgent(agent) {
+    document.getElementById('active-agent').textContent = agent;
+}
+
+function updateConversationCompletedRounds(rounds) {
+    document.getElementById('completed-rounds').textContent = rounds;
+}
+
+function updateConversationMessageCount(count) {
+    document.getElementById('message-count').textContent = count;
+}
+
+// Voice input functionality
+function toggleVoiceInput(textareaId) {
+    const textarea = document.getElementById(textareaId);
+    const voiceBtn = textarea.parentElement.querySelector('.voice-btn');
+    
+    if (voiceBtn.classList.contains('listening')) {
+        // Stop listening
+        voiceBtn.classList.remove('listening');
+        voiceBtn.innerHTML = '<i class="fas fa-microphone"></i>';
+        console.log('Voice input stopped for:', textareaId);
+    } else {
+        // Start listening
+        voiceBtn.classList.add('listening');
+        voiceBtn.innerHTML = '<i class="fas fa-microphone-slash"></i>';
+        console.log('Voice input started for:', textareaId);
+        
+        // Stop listening after 3 seconds
+        setTimeout(() => {
+            voiceBtn.classList.remove('listening');
+            voiceBtn.innerHTML = '<i class="fas fa-microphone"></i>';
+        }, 3000);
+    }
+}
+
+// Help panel toggle - FIXED POSITIONING
+function toggleConversationHelp(helpId) {
+    const helpPanel = document.getElementById(helpId);
+    const isVisible = helpPanel.classList.contains('active');
+    
+    // Hide all help panels
+    document.querySelectorAll('.help-panel').forEach(panel => {
+        panel.classList.remove('active');
+    });
+    
+    // Show the clicked panel if it wasn't visible
+    if (!isVisible) {
+        helpPanel.classList.add('active');
+    }
+}
+
+// Close help panels when clicking outside
+document.addEventListener('click', function(e) {
+    if (!e.target.closest('.conversation-section .card-header') && !e.target.closest('.conversation-section .help-panel')) {
+        document.querySelectorAll('.conversation-section .help-panel').forEach(panel => {
+            panel.classList.remove('active');
+        });
+    }
+});
+
+console.log('Section 3: Conversation Control Center - Help Panel Fixed');
+</script>
+
+<!-- SECTION 4: HUMAN SIMULATOR & AI CLONE DEVELOPMENT -->
+<div class="human-simulator-container">
+    <!-- Human Simulator & AI Clone Development Section -->
+    <section class="human-simulator-section">
+        <div class="section-header">
+            <div class="section-title-container">
+                <i class="fas fa-brain section-icon"></i>
+                <h2 class="section-title">Human Simulator & AI Clone Development</h2>
+                <div class="section-help" onclick="toggleHelp('human-simulator-help')">
+                    <i class="fas fa-question-circle"></i>
                 </div>
-                
-                <div class="agent-controls">
-                    <select class="agent-select" id="agent-b-select">
-                        <option value="">Select Agent B...</option>
-                        <option value="gpt-4o">GPT-4o</option>
-                        <option value="chatgpt-4-turbo">ChatGPT 4 Turbo</option>
-                        <option value="gemini-2-flash">Gemini 2.0 Flash</option>
-                        <option value="meta-llama-3-3">Meta Llama 3.3</option>
-                        <option value="deepseek-r1">DeepSeek R1</option>
-                        <option value="wizardlm-2">WizardLM 2</option>
-                        <option value="mixtral-8x22b">Mixtral 8x22B</option>
-                        <option value="neural-chat">Neural Chat</option>
-                        <option value="gemini-pro-1-5">Gemini Pro 1.5</option>
-                        <option value="yi-large">Yi Large</option>
-                        <option value="nous-hermes-3">Nous Hermes 3</option>
-                        <option value="dolphin-mixtral">Dolphin Mixtral</option>
-                        <option value="perplexity-pro">Perplexity Pro</option>
-                        <option value="command-r-plus">Command R+</option>
-                        <option value="qwen-2-5-72b">Qwen 2.5 72B</option>
-                        <option value="openhermes-2-5">OpenHermes 2.5</option>
-                        <option value="mistral-large">Mistral Large</option>
-                        <option value="llama-3-3-70b">Llama 3.3 70B</option>
-                        <option value="starling-7b">Starling 7B</option>
-                        <option value="claude-3-5-sonnet">Claude 3.5 Sonnet</option>
-                    </select>
-                    
-                    <div class="agent-toolbar">
-                        <button class="toolbar-btn" title="Reset Agent B">
-                            <i class="fas fa-redo"></i>
-                        </button>
-                        <button class="toolbar-btn" title="Refresh Agent B">
-                            <i class="fas fa-sync"></i>
-                        </button>
-                        <button class="toolbar-btn" title="Copy Response">
-                            <i class="fas fa-copy"></i>
-                        </button>
-                        <button class="toolbar-btn" title="Edit Response">
-                            <i class="fas fa-edit"></i>
-                        </button>
-                        <button class="toolbar-btn" title="Download Response">
-                            <i class="fas fa-download"></i>
-                        </button>
-                        <button class="toolbar-btn" title="Agent Settings">
-                            <i class="fas fa-cog"></i>
-                        </button>
-                    </div>
+            </div>
+            <div class="section-status">Ready</div>
+        </div>
+
+        <div class="help-panel" id="human-simulator-help">
+            <h3>Human Simulator & AI Clone Development Guide</h3>
+            <div class="help-content">
+                <div class="help-item">
+                    <strong>AI Clone Intelligence:</strong>
+                    <p>Your personal AI clone learns your communication style, phrases, and decision patterns to act as an intelligent human proxy.</p>
                 </div>
-                
-                <div class="agent-content">
-                    <div class="agent-placeholder">
-                        <div class="placeholder-icon">
-                            <i class="fas fa-robot"></i>
-                        </div>
-                        <h4>Agent B ready for collaboration</h4>
-                        <p>Select an agent and start a session to begin!</p>
-                    </div>
+                <div class="help-item">
+                    <strong>Multi-Agent Orchestration:</strong>
+                    <p>Your clone intelligently manages all 20 AI agents, selecting the best agents for each phase of the conversation.</p>
+                </div>
+                <div class="help-item">
+                    <strong>Learning & Development:</strong>
+                    <p>The more you use the system, the better your clone becomes at mimicking your thinking patterns and communication style.</p>
+                </div>
+                <div class="help-item">
+                    <strong>Strategy Modes:</strong>
+                    <p>Choose how your clone approaches problems: Balanced, Aggressive, Conservative, Creative, or Deep Analysis.</p>
+                </div>
+                <div class="help-item">
+                    <strong>Unique Selling Proposition:</strong>
+                    <p>The key differentiator - an AI that learns to think and communicate exactly like you, managing complex multi-agent conversations.</p>
                 </div>
             </div>
         </div>
 
-        <!-- HUMAN SIMULATOR SECTION -->
-        <section class="human-simulator-section" id="human-simulator" style="display: none;">
-            <div class="card-header">
-                <div class="card-title-section">
-                    <i class="fas fa-brain card-icon"></i>
-                    <h2 class="card-title">Human Simulator & Advanced AI Orchestration</h2>
-                </div>
-                <div class="agent-status">Ready</div>
-                <button class="help-btn" title="Human Simulator Guide">
-                    <i class="fas fa-question-circle"></i>
-                </button>
-            </div>
-            
-            <div class="simulator-controls">
-                <div>
-                    <div class="form-group">
-                        <label class="form-label">Autonomous Rounds (1-30):</label>
-                        <input type="range" class="form-input" id="simulator-rounds" min="1" max="30" value="5">
-                        <div class="rounds-display">5</div>
+        <div class="simulator-container">
+            <!-- Main Controls Section (75% of space) -->
+            <div class="simulator-main-controls">
+                <div class="simulator-controls">
+                    <div class="control-group">
+                        <label class="control-label">
+                            <i class="fas fa-sync-alt"></i>
+                            Autonomous Rounds (1-30):
+                        </label>
+                        <div class="rounds-control">
+                            <input type="range" id="simulator-rounds" min="1" max="30" value="5" class="rounds-slider">
+                            <span class="rounds-display">5</span>
+                        </div>
                     </div>
-                    
-                    <div class="form-group">
-                        <label class="form-label">Strategy Mode:</label>
-                        <select class="form-input form-select" id="strategy-mode">
+
+                    <div class="control-group">
+                        <label class="control-label">
+                            <i class="fas fa-chess"></i>
+                            Strategy Mode:
+                        </label>
+                        <select id="strategy-mode" class="strategy-select">
                             <option value="balanced">Balanced Orchestration</option>
                             <option value="aggressive">Aggressive Exploration</option>
                             <option value="conservative">Conservative Analysis</option>
@@ -1498,486 +1827,2172 @@
                             <option value="deep">Deep Analysis</option>
                         </select>
                     </div>
-                </div>
-                
-                <div>
-                    <div class="form-group">
-                        <label class="form-label">Collaboration Mode:</label>
-                        <div class="mode-buttons">
-                            <button class="mode-btn active" data-mode="auto-detect">Auto-Detect</button>
-                            <button class="mode-btn" data-mode="2-agent">2-Agent</button>
-                            <button class="mode-btn" data-mode="expert-panel">Expert Panel</button>
-                            <button class="mode-btn" data-mode="conference-chain">Conference Chain</button>
-                        </div>
-                        <div class="mode-description">
-                            <strong>Auto-Detect Mode</strong><br>
-                            Intelligently selects the optimal collaboration mode based on your conversation style and prompt complexity.
-                        </div>
-                    </div>
-                </div>
-            </div>
-            
-            <div class="form-group">
-                <label class="form-label">Human Simulator Instructions:</label>
-                <textarea class="form-input form-textarea" id="simulator-instructions" placeholder="Act as an intelligent human orchestrator. Analyze the conversation topic, select the most appropriate AI agents for each phase, and guide the discussion toward comprehensive insights. Use your judgment to determine when to switch agents and how to build upon previous responses."></textarea>
-            </div>
-            
-            <div class="simulator-actions">
-                <button class="session-btn primary" id="start-simulator">
-                    <i class="fas fa-play"></i>
-                    Start Human Simulator
-                </button>
-                <button class="session-btn secondary" id="pause-simulator">
-                    <i class="fas fa-pause"></i>
-                    Pause
-                </button>
-                <button class="session-btn secondary" id="stop-simulator">
-                    <i class="fas fa-stop"></i>
-                    Stop
-                </button>
-            </div>
-            
-            <div class="status-grid">
-                <div class="status-card">
-                    <div class="status-label">Current Round</div>
-                    <div class="status-value" id="simulator-round">0</div>
-                </div>
-                <div class="status-card">
-                    <div class="status-label">Active Agent</div>
-                    <div class="status-value" id="simulator-agent">None</div>
-                </div>
-                <div class="status-card">
-                    <div class="status-label">Strategy</div>
-                    <div class="status-value" id="current-strategy">Balanced</div>
-                </div>
-                <div class="status-card">
-                    <div class="status-label">Progress</div>
-                    <div class="status-value" id="simulator-progress">0%</div>
-                </div>
-            </div>
-            
-            <div class="clone-development">
-                <h4>AI Clone Development Progress</h4>
-                <div class="clone-stats">
-                    <div class="clone-stat">
-                        <div class="clone-stat-value" id="phrases-learned">0</div>
-                        <div class="clone-stat-label">Phrases Learned</div>
-                    </div>
-                    <div class="clone-stat">
-                        <div class="clone-stat-value" id="sessions-completed">0</div>
-                        <div class="clone-stat-label">Sessions Completed</div>
-                    </div>
-                    <div class="clone-stat">
-                        <div class="clone-stat-value" id="patterns-recognized">0</div>
-                        <div class="clone-stat-label">Patterns Recognized</div>
-                    </div>
-                </div>
-                <div class="confidence-bar">
-                    <div class="confidence-fill" id="confidence-fill"></div>
-                </div>
-                <div class="confidence-status" id="confidence-status">Still Learning Your Style</div>
-                <div style="text-align: center; margin-top: 12px;">
-                    <span style="font-weight: 600; color: var(--logo-primary);" id="clone-confidence">0%</span> Clone Confidence
-                </div>
-            </div>
-            
-            <div class="agent-content">
-                <div class="agent-placeholder">
-                    <div class="placeholder-icon">
-                        <i class="fas fa-brain"></i>
-                    </div>
-                    <h4>Human Simulator ready for orchestration</h4>
-                    <p>Configure your strategy and start the Human Simulator to begin intelligent multi-agent orchestration!</p>
-                </div>
-            </div>
-        </section>
 
-        <!-- LIVE CONVERSATION -->
-        <section class="live-conversation-section">
-            <div class="card-header">
-                <div class="card-title-section">
-                    <i class="fas fa-comments card-icon"></i>
-                    <h2 class="card-title">Live Conversation</h2>
-                </div>
-                <button class="help-btn" title="Live Conversation Guide">
-                    <i class="fas fa-question-circle"></i>
-                </button>
-            </div>
-            
-            <div class="conversation-area">
-                <div class="conversation-icon">
-                    <i class="fas fa-comment-dots"></i>
-                </div>
-                <div class="conversation-title">No conversation yet</div>
-                <div class="conversation-subtitle">Select agents and start a session to begin! All agent responses and conversations will appear here in real-time.</div>
-            </div>
-        </section>
-
-        <!-- AI SYNTHESIS & SUMMARY -->
-        <section class="synthesis-section">
-            <div class="card-header">
-                <div class="card-title-section">
-                    <i class="fas fa-brain card-icon"></i>
-                    <h2 class="card-title">AI Synthesis & Summary</h2>
-                </div>
-                <button class="help-btn" title="AI Synthesis Guide">
-                    <i class="fas fa-question-circle"></i>
-                </button>
-            </div>
-            
-            <div class="synthesis-area">
-                <div class="synthesis-icon">
-                    <i class="fas fa-lightbulb"></i>
-                </div>
-                <div class="synthesis-title">Ready for synthesis</div>
-                <div class="synthesis-subtitle">AI-powered analysis and insights will appear here as conversations develop.</div>
-            </div>
-        </section>
-
-        <!-- SESSION MEMORY -->
-        <section class="session-memory-section">
-            <div class="card-header">
-                <div class="card-title-section">
-                    <i class="fas fa-save card-icon"></i>
-                    <h2 class="card-title">Session Memory</h2>
-                </div>
-                <button class="help-btn" title="Session Memory Guide">
-                    <i class="fas fa-question-circle"></i>
-                </button>
-            </div>
-            
-            <div class="memory-controls">
-                <button class="memory-btn">
-                    <i class="fas fa-file-pdf"></i>
-                    Export PDF
-                </button>
-                <button class="memory-btn">
-                    <i class="fas fa-file-code"></i>
-                    Export JSON
-                </button>
-                <button class="memory-btn">
-                    <i class="fas fa-file-alt"></i>
-                    Export TXT
-                </button>
-                <button class="memory-btn">
-                    <i class="fas fa-upload"></i>
-                    Upload Session
-                </button>
-                <button class="memory-btn">
-                    <i class="fas fa-trash"></i>
-                    Clear Session
-                </button>
-            </div>
-            
-            <div class="memory-status">
-                <div class="status-item">
-                    <span class="status-label">System</span>
-                    <span class="status-value">Revolutionary AI orchestration platform initialized. Infinite AI combinations ready!</span>
-                </div>
-                <div class="status-item">
-                    <span class="status-label">Status</span>
-                    <span class="status-value">Session ready for multi-agent collaboration</span>
-                </div>
-            </div>
-        </section>
-
-        <!-- LIVE DIAGNOSTICS -->
-        <section class="diagnostics-section">
-            <div class="card-header">
-                <div class="card-title-section">
-                    <i class="fas fa-chart-line card-icon"></i>
-                    <h2 class="card-title">Live Diagnostics</h2>
-                </div>
-                <button class="help-btn" title="Live Diagnostics Guide">
-                    <i class="fas fa-question-circle"></i>
-                </button>
-            </div>
-            
-            <div class="diagnostics-grid">
-                <div class="diagnostic-card">
-                    <div class="diagnostic-value" id="session-time">0s</div>
-                    <div class="diagnostic-label">Session Time</div>
-                </div>
-                <div class="diagnostic-card">
-                    <div class="diagnostic-value" id="total-messages">0</div>
-                    <div class="diagnostic-label">Total Messages</div>
-                </div>
-                <div class="diagnostic-card">
-                    <div class="diagnostic-value" id="current-round">0</div>
-                    <div class="diagnostic-label">Current Round</div>
-                </div>
-                <div class="diagnostic-card">
-                    <div class="diagnostic-value" id="active-agents">0</div>
-                    <div class="diagnostic-label">Active Agents</div>
-                </div>
-            </div>
-            
-            <div class="system-status-grid">
-                <div class="system-status-card">
-                    <div class="system-status-title">API Status</div>
-                    <div class="system-status-content">
-                        <div class="status-indicator">
-                            <span class="status-indicator-dot"></span>
-                            Real AI Backend Connected
+                    <div class="control-group">
+                        <label class="control-label">
+                            <i class="fas fa-users"></i>
+                            Collaboration Mode:
+                        </label>
+                        <div class="collaboration-modes">
+                            <button class="mode-btn active" data-mode="auto-detect">
+                                <i class="fas fa-magic"></i>
+                                Auto-Detect
+                            </button>
+                            <button class="mode-btn" data-mode="2-agent">
+                                <i class="fas fa-user-friends"></i>
+                                2-Agent
+                            </button>
+                            <button class="mode-btn" data-mode="expert-panel">
+                                <i class="fas fa-users-cog"></i>
+                                Expert Panel
+                            </button>
+                            <button class="mode-btn" data-mode="conference-chain">
+                                <i class="fas fa-link"></i>
+                                Conference Chain
+                            </button>
                         </div>
                     </div>
                 </div>
-                <div class="system-status-card">
-                    <div class="system-status-title">Current Session</div>
-                    <div class="system-status-content">
-                        Session ID: None
+
+                <div class="mode-description">
+                    <div class="mode-info active" data-mode="auto-detect">
+                        <h4><i class="fas fa-magic"></i> Auto-Detect Mode</h4>
+                        <p>Intelligently selects the optimal collaboration mode based on your conversation style and prompt complexity.</p>
+                    </div>
+                    <div class="mode-info" data-mode="2-agent">
+                        <h4><i class="fas fa-user-friends"></i> 2-Agent Mode</h4>
+                        <p>Focused collaboration between two carefully selected AI agents for targeted analysis and discussion.</p>
+                    </div>
+                    <div class="mode-info" data-mode="expert-panel">
+                        <h4><i class="fas fa-users-cog"></i> Expert Panel Mode</h4>
+                        <p>Engages multiple expert agents simultaneously for comprehensive analysis from diverse perspectives.</p>
+                    </div>
+                    <div class="mode-info" data-mode="conference-chain">
+                        <h4><i class="fas fa-link"></i> Conference Chain Mode</h4>
+                        <p>Sequential expert analysis where agents build upon each other's insights in a structured chain of reasoning.</p>
+                    </div>
+                </div>
+
+                <div class="simulator-instructions">
+                    <label class="control-label">
+                        <i class="fas fa-robot"></i>
+                        Human Simulator Instructions:
+                    </label>
+                    <textarea id="simulator-instructions" class="simulator-textarea" placeholder="Act as an intelligent human orchestrator. Analyze the conversation topic, select the most appropriate AI agents for each phase, and guide the discussion toward comprehensive insights. Use your judgment to determine when to switch agents and how to build upon previous responses.">Act as an intelligent human orchestrator. Analyze the conversation topic, select the most appropriate AI agents for each phase, and guide the discussion toward comprehensive insights. Use your judgment to determine when to switch agents and how to build upon previous responses.</textarea>
+                </div>
+
+                <div class="simulator-actions">
+                    <button id="start-human-simulator" class="action-btn primary">
+                        <i class="fas fa-play"></i>
+                        Start Human Simulator
+                    </button>
+                    <button id="pause-simulator" class="action-btn secondary">
+                        <i class="fas fa-pause"></i>
+                        Pause
+                    </button>
+                    <button id="stop-simulator" class="action-btn danger">
+                        <i class="fas fa-stop"></i>
+                        Stop
+                    </button>
+                    <button id="voice-simulator" class="action-btn voice" title="Voice Input">
+                        <i class="fas fa-microphone"></i>
+                    </button>
+                </div>
+
+                <div class="status-grid">
+                    <div class="status-item">
+                        <label>Current Round</label>
+                        <span id="current-round">0</span>
+                    </div>
+                    <div class="status-item">
+                        <label>Active Agent</label>
+                        <span id="active-agent">None</span>
+                    </div>
+                    <div class="status-item">
+                        <label>Strategy</label>
+                        <span id="current-strategy">Balanced</span>
+                    </div>
+                    <div class="status-item">
+                        <label>Progress</label>
+                        <div class="progress-bar">
+                            <div class="progress-fill" style="width: 0%"></div>
+                        </div>
                     </div>
                 </div>
             </div>
-        </section>
+
+            <!-- AI Clone Development Panel (25% of space) -->
+            <div class="clone-development-panel">
+                <div class="clone-header">
+                    <h3 class="clone-title">
+                        <i class="fas fa-user-cog"></i>
+                        Your AI Clone Development
+                    </h3>
+                    <div class="clone-status-indicator">
+                        <div class="status-dot learning"></div>
+                        <span>Learning</span>
+                    </div>
+                </div>
+
+                <div class="clone-confidence">
+                    <div class="confidence-header">
+                        <span class="confidence-label">Clone Confidence</span>
+                        <span class="confidence-percentage" id="clone-confidence">0%</span>
+                    </div>
+                    <div class="confidence-bar">
+                        <div class="confidence-fill" id="confidence-fill" style="width: 0%"></div>
+                    </div>
+                    <div class="confidence-status" id="confidence-status">Still Learning Your Style</div>
+                </div>
+
+                <div class="learning-stats">
+                    <div class="stat-item">
+                        <div class="stat-icon">
+                            <i class="fas fa-comments"></i>
+                        </div>
+                        <div class="stat-content">
+                            <span class="stat-number" id="phrases-learned">0</span>
+                            <span class="stat-label">Phrases Learned</span>
+                        </div>
+                    </div>
+                    <div class="stat-item">
+                        <div class="stat-icon">
+                            <i class="fas fa-history"></i>
+                        </div>
+                        <div class="stat-content">
+                            <span class="stat-number" id="sessions-completed">0</span>
+                            <span class="stat-label">Sessions Completed</span>
+                        </div>
+                    </div>
+                    <div class="stat-item">
+                        <div class="stat-icon">
+                            <i class="fas fa-brain"></i>
+                        </div>
+                        <div class="stat-content">
+                            <span class="stat-number" id="patterns-recognized">0</span>
+                            <span class="stat-label">Patterns Recognized</span>
+                        </div>
+                    </div>
+                </div>
+
+                <div class="clone-insights">
+                    <h4 class="insights-title">
+                        <i class="fas fa-lightbulb"></i>
+                        Learning Insights
+                    </h4>
+                    <div class="insight-item">
+                        <i class="fas fa-check-circle insight-icon"></i>
+                        <span class="insight-text">Analyzing your communication patterns...</span>
+                    </div>
+                    <div class="insight-item">
+                        <i class="fas fa-clock insight-icon"></i>
+                        <span class="insight-text">Building your decision-making profile...</span>
+                    </div>
+                    <div class="insight-item">
+                        <i class="fas fa-star insight-icon"></i>
+                        <span class="insight-text">Learning your preferred agent combinations...</span>
+                    </div>
+                </div>
+
+                <div class="clone-value-prop">
+                    <div class="value-message">
+                        <i class="fas fa-shield-alt"></i>
+                        <p><strong>Your AI Clone is Unique:</strong> All learning data stays secure in your account. Your personalized AI twin cannot be replicated or exported.</p>
+                    </div>
+                </div>
+            </div>
+        </div>
+    </section>
+</div>
+
+<style>
+/* SECTION 4: HUMAN SIMULATOR - SCOPED STYLES ONLY */
+.human-simulator-container {
+    max-width: 1400px;
+    margin: 0 auto;
+    padding: 20px;
+}
+
+.human-simulator-section {
+    background: rgba(15, 23, 42, 0.8);
+    border: 1px solid rgba(59, 130, 246, 0.2);
+    border-radius: 16px;
+    padding: 32px;
+    backdrop-filter: blur(12px);
+    box-shadow: 0 8px 32px rgba(0, 0, 0, 0.3);
+    color: #f8fafc;
+    font-family: 'Playfair Display', serif;
+}
+
+.human-simulator-section .section-header {
+    display: flex;
+    justify-content: space-between;
+    align-items: center;
+    margin-bottom: 32px;
+    padding-bottom: 16px;
+    border-bottom: 1px solid rgba(59, 130, 246, 0.2);
+}
+
+.human-simulator-section .section-title-container {
+    display: flex;
+    align-items: center;
+    gap: 16px;
+}
+
+.human-simulator-section .section-icon {
+    font-size: 28px;
+    color: #00B4D8;
+    filter: drop-shadow(0 0 8px rgba(0, 180, 216, 0.4));
+}
+
+.human-simulator-section .section-title {
+    font-size: 28px;
+    font-weight: 600;
+    color: #f8fafc;
+    text-shadow: 0 0 8px rgba(0, 180, 216, 0.2);
+    margin: 0;
+}
+
+.human-simulator-section .section-help {
+    width: 32px;
+    height: 32px;
+    background: rgba(0, 180, 216, 0.1);
+    border: 1px solid #00B4D8;
+    border-radius: 50%;
+    display: flex;
+    align-items: center;
+    justify-content: center;
+    cursor: pointer;
+    transition: all 0.3s ease;
+}
+
+.human-simulator-section .section-help:hover {
+    background: #00B4D8;
+    transform: scale(1.1);
+}
+
+.human-simulator-section .section-help i {
+    color: #00B4D8;
+    font-size: 14px;
+}
+
+.human-simulator-section .section-help:hover i {
+    color: white;
+}
+
+.human-simulator-section .section-status {
+    background: linear-gradient(135deg, #10b981, #059669);
+    color: white;
+    padding: 8px 16px;
+    border-radius: 20px;
+    font-size: 14px;
+    font-weight: 600;
+    text-transform: uppercase;
+    letter-spacing: 0.5px;
+}
+
+.human-simulator-section .help-panel {
+    display: none;
+    background: rgba(15, 23, 42, 0.95);
+    border: 1px solid #00B4D8;
+    border-radius: 12px;
+    padding: 24px;
+    margin-bottom: 24px;
+    backdrop-filter: blur(12px);
+}
+
+.human-simulator-section .help-panel h3 {
+    color: #00B4D8;
+    margin-bottom: 16px;
+    font-size: 18px;
+}
+
+.human-simulator-section .help-content {
+    display: grid;
+    gap: 16px;
+}
+
+.human-simulator-section .help-item strong {
+    color: #00D4C7;
+    display: block;
+    margin-bottom: 4px;
+}
+
+.human-simulator-section .help-item p {
+    color: #cbd5e1;
+    line-height: 1.5;
+    font-size: 14px;
+}
+
+.human-simulator-section .simulator-container {
+    display: flex;
+    gap: 32px;
+}
+
+.human-simulator-section .simulator-main-controls {
+    flex: 3;
+    background: rgba(15, 23, 42, 0.6);
+    border: 1px solid rgba(59, 130, 246, 0.2);
+    border-radius: 16px;
+    padding: 32px;
+    backdrop-filter: blur(8px);
+}
+
+.human-simulator-section .clone-development-panel {
+    flex: 1;
+    background: rgba(15, 23, 42, 0.6);
+    border: 1px solid rgba(59, 130, 246, 0.2);
+    border-radius: 16px;
+    padding: 24px;
+    backdrop-filter: blur(8px);
+    min-height: 700px;
+}
+
+.human-simulator-section .simulator-controls {
+    display: grid;
+    gap: 24px;
+    margin-bottom: 32px;
+}
+
+.human-simulator-section .control-group {
+    display: flex;
+    flex-direction: column;
+    gap: 12px;
+}
+
+.human-simulator-section .control-label {
+    font-size: 16px;
+    font-weight: 600;
+    color: #cbd5e1;
+    display: flex;
+    align-items: center;
+    gap: 10px;
+}
+
+.human-simulator-section .control-label i {
+    color: #00B4D8;
+    width: 20px;
+}
+
+.human-simulator-section .rounds-control {
+    display: flex;
+    align-items: center;
+    gap: 16px;
+}
+
+.human-simulator-section .rounds-slider {
+    flex: 1;
+    height: 8px;
+    background: rgba(255, 255, 255, 0.1);
+    border-radius: 4px;
+    outline: none;
+    -webkit-appearance: none;
+    cursor: pointer;
+}
+
+.human-simulator-section .rounds-slider::-webkit-slider-thumb {
+    -webkit-appearance: none;
+    width: 24px;
+    height: 24px;
+    background: linear-gradient(135deg, #00B4D8, #0077B6);
+    border-radius: 50%;
+    cursor: pointer;
+    box-shadow: 0 0 8px rgba(0, 180, 216, 0.5);
+}
+
+.human-simulator-section .rounds-slider::-moz-range-thumb {
+    width: 24px;
+    height: 24px;
+    background: linear-gradient(135deg, #00B4D8, #0077B6);
+    border-radius: 50%;
+    cursor: pointer;
+    border: none;
+    box-shadow: 0 0 8px rgba(0, 180, 216, 0.5);
+}
+
+.human-simulator-section .rounds-display {
+    font-size: 24px;
+    font-weight: 700;
+    color: #00B4D8;
+    min-width: 40px;
+    text-align: center;
+    text-shadow: 0 0 8px rgba(0, 180, 216, 0.3);
+}
+
+.human-simulator-section .strategy-select {
+    background: rgba(255, 255, 255, 0.05);
+    border: 1px solid rgba(59, 130, 246, 0.2);
+    border-radius: 12px;
+    padding: 16px 20px;
+    color: #f8fafc;
+    font-size: 16px;
+    font-family: 'Playfair Display', serif;
+    outline: none;
+    cursor: pointer;
+    transition: all 0.3s ease;
+}
+
+.human-simulator-section .strategy-select:focus {
+    border-color: #00B4D8;
+    box-shadow: 0 0 0 3px rgba(0, 180, 216, 0.1);
+}
+
+.human-simulator-section .collaboration-modes {
+    display: flex;
+    gap: 12px;
+    flex-wrap: wrap;
+}
+
+.human-simulator-section .mode-btn {
+    background: rgba(255, 255, 255, 0.05);
+    border: 1px solid rgba(59, 130, 246, 0.2);
+    border-radius: 12px;
+    padding: 14px 20px;
+    color: #cbd5e1;
+    font-size: 14px;
+    font-family: 'Playfair Display', serif;
+    cursor: pointer;
+    transition: all 0.3s ease;
+    display: flex;
+    align-items: center;
+    gap: 8px;
+    font-weight: 500;
+}
+
+.human-simulator-section .mode-btn:hover {
+    background: rgba(0, 180, 216, 0.1);
+    border-color: #00B4D8;
+    color: #f8fafc;
+}
+
+.human-simulator-section .mode-btn.active {
+    background: linear-gradient(135deg, #00B4D8, #0077B6);
+    border-color: #00B4D8;
+    color: white;
+    box-shadow: 0 0 16px rgba(0, 180, 216, 0.3);
+}
+
+.human-simulator-section .mode-description {
+    background: rgba(255, 255, 255, 0.02);
+    border: 1px solid rgba(59, 130, 246, 0.2);
+    border-radius: 12px;
+    padding: 20px;
+    margin-bottom: 24px;
+}
+
+.human-simulator-section .mode-info {
+    display: none;
+}
+
+.human-simulator-section .mode-info.active {
+    display: block;
+}
+
+.human-simulator-section .mode-info h4 {
+    color: #00B4D8;
+    margin-bottom: 12px;
+    display: flex;
+    align-items: center;
+    gap: 10px;
+    font-size: 18px;
+}
+
+.human-simulator-section .mode-info p {
+    color: #cbd5e1;
+    line-height: 1.6;
+    font-size: 15px;
+}
+
+.human-simulator-section .simulator-instructions {
+    margin-bottom: 32px;
+}
+
+.human-simulator-section .simulator-textarea {
+    width: 100%;
+    min-height: 100px;
+    background: rgba(255, 255, 255, 0.05);
+    border: 1px solid rgba(59, 130, 246, 0.2);
+    border-radius: 12px;
+    padding: 16px;
+    color: #f8fafc;
+    font-size: 15px;
+    font-family: 'Playfair Display', serif;
+    line-height: 1.6;
+    resize: vertical;
+    outline: none;
+    transition: all 0.3s ease;
+}
+
+.human-simulator-section .simulator-textarea:focus {
+    border-color: #00B4D8;
+    box-shadow: 0 0 0 3px rgba(0, 180, 216, 0.1);
+}
+
+.human-simulator-section .simulator-actions {
+    display: flex;
+    gap: 16px;
+    margin-bottom: 32px;
+    flex-wrap: wrap;
+}
+
+.human-simulator-section .action-btn {
+    padding: 16px 24px;
+    border-radius: 12px;
+    border: none;
+    font-weight: 600;
+    font-family: 'Playfair Display', serif;
+    cursor: pointer;
+    transition: all 0.3s ease;
+    display: flex;
+    align-items: center;
+    gap: 10px;
+    font-size: 15px;
+    text-transform: uppercase;
+    letter-spacing: 0.5px;
+}
+
+.human-simulator-section .action-btn:hover {
+    transform: translateY(-2px);
+    box-shadow: 0 8px 24px rgba(0, 0, 0, 0.3);
+}
+
+.human-simulator-section .action-btn.primary {
+    background: linear-gradient(135deg, #00B4D8, #0077B6);
+    color: white;
+    box-shadow: 0 0 16px rgba(0, 180, 216, 0.3);
+}
+
+.human-simulator-section .action-btn.secondary {
+    background: linear-gradient(135deg, #4a5568, #2d3748);
+    color: #f8fafc;
+    border: 1px solid rgba(255, 255, 255, 0.2);
+    box-shadow: 0 2px 8px rgba(0, 0, 0, 0.3), inset 0 1px 0 rgba(255, 255, 255, 0.1);
+}
+
+.human-simulator-section .action-btn.secondary:hover {
+    background: linear-gradient(135deg, #00B4D8, #0077B6);
+    border-color: #00B4D8;
+    color: white;
+    box-shadow: 0 4px 16px rgba(0, 180, 216, 0.3), inset 0 1px 0 rgba(255, 255, 255, 0.2);
+}
+
+.human-simulator-section .action-btn.secondary.active {
+    background: linear-gradient(135deg, #00B4D8, #0077B6);
+    border-color: #00B4D8;
+    color: white;
+    box-shadow: 0 0 16px rgba(0, 180, 216, 0.4);
+}
+
+.human-simulator-section .action-btn.danger {
+    background: linear-gradient(135deg, #4a5568, #2d3748);
+    color: #f8fafc;
+    border: 1px solid rgba(255, 255, 255, 0.2);
+    box-shadow: 0 2px 8px rgba(0, 0, 0, 0.3), inset 0 1px 0 rgba(255, 255, 255, 0.1);
+}
+
+.human-simulator-section .action-btn.danger:hover {
+    background: linear-gradient(135deg, #00B4D8, #0077B6);
+    border-color: #00B4D8;
+    color: white;
+    box-shadow: 0 4px 16px rgba(0, 180, 216, 0.3), inset 0 1px 0 rgba(255, 255, 255, 0.2);
+}
+
+.human-simulator-section .action-btn.danger.active {
+    background: linear-gradient(135deg, #00B4D8, #0077B6);
+    border-color: #00B4D8;
+    color: white;
+    box-shadow: 0 0 16px rgba(0, 180, 216, 0.4);
+}
+
+.human-simulator-section .action-btn.voice {
+    background: rgba(255, 255, 255, 0.1);
+    color: #f8fafc;
+    border: 1px solid rgba(59, 130, 246, 0.2);
+}
+
+.human-simulator-section .status-grid {
+    display: grid;
+    grid-template-columns: repeat(auto-fit, minmax(180px, 1fr));
+    gap: 20px;
+}
+
+.human-simulator-section .status-item {
+    background: rgba(255, 255, 255, 0.02);
+    border: 1px solid rgba(59, 130, 246, 0.2);
+    border-radius: 12px;
+    padding: 16px;
+    text-align: center;
+    transition: all 0.3s ease;
+}
+
+.human-simulator-section .status-item:hover {
+    background: rgba(255, 255, 255, 0.05);
+    border-color: #00B4D8;
+}
+
+.human-simulator-section .status-item label {
+    display: block;
+    font-size: 13px;
+    color: #64748b;
+    margin-bottom: 8px;
+    text-transform: uppercase;
+    letter-spacing: 0.5px;
+}
+
+.human-simulator-section .status-item span {
+    font-size: 18px;
+    font-weight: 700;
+    color: #f8fafc;
+}
+
+.human-simulator-section .progress-bar {
+    width: 100%;
+    height: 8px;
+    background: rgba(255, 255, 255, 0.1);
+    border-radius: 4px;
+    overflow: hidden;
+    margin-top: 8px;
+}
+
+.human-simulator-section .progress-fill {
+    height: 100%;
+    background: linear-gradient(90deg, #00B4D8, #00D4C7);
+    border-radius: 4px;
+    transition: width 0.5s ease;
+}
+
+/* Clone Development Panel Styles */
+.human-simulator-section .clone-header {
+    display: flex;
+    justify-content: space-between;
+    align-items: center;
+    margin-bottom: 24px;
+    padding-bottom: 16px;
+    border-bottom: 1px solid rgba(59, 130, 246, 0.2);
+}
+
+.human-simulator-section .clone-title {
+    font-size: 18px;
+    color: #f8fafc;
+    display: flex;
+    align-items: center;
+    gap: 10px;
+    margin: 0;
+    font-weight: 600;
+}
+
+.human-simulator-section .clone-status-indicator {
+    display: flex;
+    align-items: center;
+    gap: 8px;
+    font-size: 13px;
+    color: #cbd5e1;
+    font-weight: 500;
+}
+
+.human-simulator-section .status-dot {
+    width: 10px;
+    height: 10px;
+    border-radius: 50%;
+    background: #f59e0b;
+    animation: pulse 2s infinite;
+}
+
+.human-simulator-section .status-dot.learning {
+    background: #f59e0b;
+}
+
+.human-simulator-section .status-dot.ready {
+    background: #10b981;
+    animation: none;
+}
+
+@keyframes pulse {
+    0%, 100% { opacity: 1; transform: scale(1); }
+    50% { opacity: 0.6; transform: scale(1.1); }
+}
+
+.human-simulator-section .clone-confidence {
+    margin-bottom: 28px;
+}
+
+.human-simulator-section .confidence-header {
+    display: flex;
+    justify-content: space-between;
+    align-items: center;
+    margin-bottom: 12px;
+}
+
+.human-simulator-section .confidence-label {
+    font-size: 15px;
+    color: #cbd5e1;
+    font-weight: 500;
+}
+
+.human-simulator-section .confidence-percentage {
+    font-size: 24px;
+    font-weight: 700;
+    color: #00B4D8;
+    text-shadow: 0 0 8px rgba(0, 180, 216, 0.3);
+}
+
+.human-simulator-section .confidence-bar {
+    width: 100%;
+    height: 10px;
+    background: rgba(255, 255, 255, 0.1);
+    border-radius: 5px;
+    overflow: hidden;
+    margin-bottom: 12px;
+}
+
+.human-simulator-section .confidence-fill {
+    height: 100%;
+    background: linear-gradient(90deg, #f59e0b, #00B4D8, #10b981);
+    border-radius: 5px;
+    transition: width 0.8s ease;
+}
+
+.human-simulator-section .confidence-status {
+    font-size: 13px;
+    color: #64748b;
+    text-align: center;
+    font-style: italic;
+}
+
+.human-simulator-section .learning-stats {
+    margin-bottom: 28px;
+}
+
+.human-simulator-section .stat-item {
+    display: flex;
+    align-items: center;
+    gap: 14px;
+    padding: 12px 0;
+    border-bottom: 1px solid rgba(255, 255, 255, 0.05);
+    transition: all 0.3s ease;
+}
+
+.human-simulator-section .stat-item:hover {
+    background: rgba(255, 255, 255, 0.02);
+    border-radius: 8px;
+    padding-left: 8px;
+    padding-right: 8px;
+}
+
+.human-simulator-section .stat-item:last-child {
+    border-bottom: none;
+}
+
+.human-simulator-section .stat-icon {
+    width: 36px;
+    height: 36px;
+    background: rgba(0, 180, 216, 0.1);
+    border-radius: 8px;
+    display: flex;
+    align-items: center;
+    justify-content: center;
+    color: #00B4D8;
+    font-size: 16px;
+}
+
+.human-simulator-section .stat-content {
+    flex: 1;
+}
+
+.human-simulator-section .stat-number {
+    display: block;
+    font-size: 20px;
+    font-weight: 700;
+    color: #f8fafc;
+}
+
+.human-simulator-section .stat-label {
+    font-size: 13px;
+    color: #64748b;
+}
+
+.human-simulator-section .clone-insights {
+    margin-bottom: 24px;
+}
+
+.human-simulator-section .insights-title {
+    font-size: 16px;
+    color: #cbd5e1;
+    margin-bottom: 16px;
+    display: flex;
+    align-items: center;
+    gap: 8px;
+    font-weight: 600;
+}
+
+.human-simulator-section .insight-item {
+    display: flex;
+    align-items: center;
+    gap: 10px;
+    padding: 8px 0;
+    font-size: 13px;
+    color: #64748b;
+}
+
+.human-simulator-section .insight-icon {
+    color: #00D4C7;
+    font-size: 12px;
+}
+
+.human-simulator-section .clone-value-prop {
+    background: rgba(0, 180, 216, 0.05);
+    border: 1px solid rgba(0, 180, 216, 0.2);
+    border-radius: 12px;
+    padding: 16px;
+}
+
+.human-simulator-section .value-message {
+    display: flex;
+    align-items: flex-start;
+    gap: 12px;
+}
+
+.human-simulator-section .value-message i {
+    color: #00B4D8;
+    margin-top: 3px;
+    font-size: 16px;
+}
+
+.human-simulator-section .value-message p {
+    font-size: 13px;
+    color: #cbd5e1;
+    line-height: 1.5;
+    margin: 0;
+}
+
+.human-simulator-section .value-message strong {
+    color: #00B4D8;
+}
+
+/* Responsive Design */
+@media (max-width: 1200px) {
+    .human-simulator-section .simulator-container {
+        flex-direction: column;
+    }
+    
+    .human-simulator-section .clone-development-panel {
+        min-height: auto;
+    }
+}
+
+@media (max-width: 768px) {
+    .human-simulator-container {
+        padding: 10px;
+    }
+    
+    .human-simulator-section {
+        padding: 20px;
+    }
+    
+    .human-simulator-section .section-title {
+        font-size: 24px;
+    }
+    
+    .human-simulator-section .simulator-main-controls {
+        padding: 20px;
+    }
+    
+    .human-simulator-section .simulator-actions {
+        justify-content: center;
+    }
+    
+    .human-simulator-section .status-grid {
+        grid-template-columns: repeat(2, 1fr);
+    }
+    
+    .human-simulator-section .collaboration-modes {
+        justify-content: center;
+    }
+}
+</style>
+
+<script>
+    // Interactive functionality
+    function toggleHelp(helpId) {
+        const helpPanel = document.getElementById(helpId);
+        const isVisible = helpPanel.style.display === 'block';
+        
+        // Hide all help panels
+        document.querySelectorAll('.help-panel').forEach(panel => {
+            panel.style.display = 'none';
+        });
+        
+        // Show the clicked panel if it wasn't visible
+        if (!isVisible) {
+            helpPanel.style.display = 'block';
+        }
+    }
+
+    // Rounds slider functionality
+    document.getElementById('simulator-rounds').addEventListener('input', function() {
+        document.querySelector('.rounds-display').textContent = this.value;
+    });
+
+    // Mode button functionality
+    document.querySelectorAll('.mode-btn').forEach(btn => {
+        btn.addEventListener('click', function() {
+            // Remove active class from all buttons
+            document.querySelectorAll('.mode-btn').forEach(b => b.classList.remove('active'));
+            // Add active class to clicked button
+            this.classList.add('active');
+            
+            // Show corresponding mode info
+            const mode = this.dataset.mode;
+            document.querySelectorAll('.mode-info').forEach(info => {
+                info.classList.remove('active');
+            });
+            document.querySelector(`[data-mode="${mode}"].mode-info`).classList.add('active');
+        });
+    });
+
+    // Strategy select functionality
+    document.getElementById('strategy-mode').addEventListener('change', function() {
+        document.getElementById('current-strategy').textContent = this.options[this.selectedIndex].text.split(' ')[0];
+    });
+
+    // Real clone development data - ready for backend integration
+    // All values start at zero and will be populated by real API calls
+    // TODO: Connect to backend APIs:
+    // - /api/human-simulator/get-phrases-learned
+    // - /api/human-simulator/get-sessions-completed  
+    // - /api/human-simulator/get-patterns-recognized
+    // - /api/human-simulator/get-clone-confidence
+</script>
+
+<!-- ===== SECTION 5: AGENT WINDOWS - EXACT EXTRACTION ===== -->
+
+<style>
+/* ===== SECTION 5 SCOPED STYLES - EXACT FROM WORKING SITE ===== */
+.agent-windows-section {
+    display: grid;
+    grid-template-columns: 1fr 1fr;
+    gap: 20px;
+    margin-bottom: 32px;
+}
+
+.agent-windows-section .agent-window {
+    background: rgba(15, 23, 42, 0.8);
+    backdrop-filter: blur(12px);
+    border: 1px solid rgba(71, 85, 105, 0.3);
+    border-radius: 12px;
+    padding: 20px;
+    position: relative;
+}
+
+.agent-windows-section .agent-header {
+    display: flex;
+    align-items: center;
+    justify-content: space-between;
+    margin-bottom: 16px;
+}
+
+.agent-windows-section .agent-title {
+    display: flex;
+    align-items: center;
+    gap: 8px;
+    font-size: 16px;
+    font-weight: 600;
+    color: var(--logo-primary);
+}
+
+.agent-windows-section .agent-icon {
+    font-size: 18px;
+    color: var(--logo-primary);
+}
+
+.agent-windows-section .agent-status {
+    background: rgba(34, 197, 94, 0.2);
+    border: 1px solid rgba(34, 197, 94, 0.4);
+    border-radius: 20px;
+    padding: 4px 12px;
+    font-size: 11px;
+    font-weight: 600;
+    color: rgba(34, 197, 94, 1);
+    text-transform: uppercase;
+}
+
+.agent-windows-section .agent-help {
+    width: 20px;
+    height: 20px;
+    background: rgba(0, 180, 216, 0.15);
+    border: 1px solid rgba(0, 180, 216, 0.3);
+    border-radius: 4px;
+    color: var(--logo-primary);
+    font-size: 10px;
+    cursor: pointer;
+    display: flex;
+    align-items: center;
+    justify-content: center;
+    transition: all 0.3s ease;
+}
+
+.agent-windows-section .agent-help:hover {
+    background: rgba(0, 180, 216, 0.25);
+    border-color: var(--logo-primary);
+}
+
+.agent-windows-section .agent-dropdown {
+    width: 100%;
+    padding: 10px;
+    border: 1px solid rgba(71, 85, 105, 0.3);
+    border-radius: 6px;
+    background: rgba(30, 41, 59, 0.8);
+    color: var(--text-primary);
+    font-family: inherit;
+    font-size: 14px;
+    margin-bottom: 12px;
+}
+
+.agent-windows-section .agent-toolbar {
+    display: flex;
+    gap: 6px;
+    margin-bottom: 16px;
+    flex-wrap: wrap;
+}
+
+.agent-windows-section .toolbar-btn {
+    width: 32px;
+    height: 32px;
+    border: 1px solid rgba(71, 85, 105, 0.3);
+    border-radius: 6px;
+    background: rgba(30, 41, 59, 0.8);
+    color: rgba(148, 163, 184, 0.8);
+    font-size: 14px;
+    cursor: pointer;
+    transition: all 0.2s ease;
+    display: flex;
+    align-items: center;
+    justify-content: center;
+}
+
+.agent-windows-section .toolbar-btn:hover {
+    background: rgba(51, 65, 85, 0.8);
+    border-color: var(--logo-primary);
+    color: var(--text-primary);
+}
+
+.agent-windows-section .agent-response {
+    min-height: 200px;
+    padding: 20px;
+    border: 1px solid rgba(71, 85, 105, 0.3);
+    border-radius: 8px;
+    background: rgba(30, 41, 59, 0.5);
+    display: flex;
+    flex-direction: column;
+    align-items: center;
+    justify-content: center;
+    text-align: center;
+    color: rgba(148, 163, 184, 0.8);
+    font-size: 14px;
+    line-height: 1.6;
+}
+
+.agent-windows-section .response-icon {
+    font-size: 48px;
+    color: rgba(71, 85, 105, 0.6);
+    margin-bottom: 12px;
+}
+
+.agent-windows-section .response-title {
+    font-size: 16px;
+    font-weight: 600;
+    color: var(--text-primary);
+    margin-bottom: 8px;
+}
+
+.agent-windows-section .response-subtitle {
+    font-size: 13px;
+    color: rgba(148, 163, 184, 0.7);
+}
+
+@media (max-width: 768px) {
+    .agent-windows-section {
+        grid-template-columns: 1fr;
+    }
+}
+</style>
+
+<div class="agent-windows-section">
+    <!-- Agent A Window -->
+    <div class="agent-window">
+        <div class="agent-header">
+            <div class="agent-title">
+                <i class="fas fa-robot agent-icon"></i>
+                Agent A
+            </div>
+            <div style="display: flex; align-items: center; gap: 8px;">
+                <div class="agent-status">Ready</div>
+                <button class="agent-help" title="Agent A Guide">
+                    <i class="fas fa-question-circle"></i>
+                </button>
+            </div>
+        </div>
+        
+        <select class="agent-dropdown">
+            <option value="">Select Agent A...</option>
+            <option value="gpt-4o">GPT-4o</option>
+            <option value="chatgpt-4-turbo">ChatGPT 4 Turbo</option>
+            <option value="gemini-2-flash">Gemini 2.0 Flash</option>
+            <option value="meta-llama-3-3">Meta Llama 3.3</option>
+            <option value="deepseek-r1">DeepSeek R1</option>
+            <option value="wizardlm-2">WizardLM 2</option>
+            <option value="mixtral-8x22b">Mixtral 8x22B</option>
+            <option value="neural-chat">Neural Chat</option>
+            <option value="gemini-pro-1-5">Gemini Pro 1.5</option>
+            <option value="yi-large">Yi Large</option>
+            <option value="nous-hermes-3">Nous Hermes 3</option>
+            <option value="dolphin-mixtral">Dolphin Mixtral</option>
+            <option value="perplexity-pro">Perplexity Pro</option>
+            <option value="command-r-plus">Command R+</option>
+            <option value="qwen-2-5-72b">Qwen 2.5 72B</option>
+            <option value="openhermes-2-5">OpenHermes 2.5</option>
+            <option value="mistral-large">Mistral Large</option>
+            <option value="llama-3-3-70b">Llama 3.3 70B</option>
+            <option value="starling-7b">Starling 7B</option>
+            <option value="claude-3-5-sonnet">Claude 3.5 Sonnet</option>
+        </select>
+        
+        <div class="agent-toolbar">
+            <button class="toolbar-btn" title="Reset Agent A">
+                <i class="fas fa-undo"></i>
+            </button>
+            <button class="toolbar-btn" title="Refresh Agent A">
+                <i class="fas fa-sync"></i>
+            </button>
+            <button class="toolbar-btn" title="Copy Response">
+                <i class="fas fa-copy"></i>
+            </button>
+            <button class="toolbar-btn" title="Edit Response">
+                <i class="fas fa-edit"></i>
+            </button>
+            <button class="toolbar-btn" title="Download Response">
+                <i class="fas fa-download"></i>
+            </button>
+            <button class="toolbar-btn" title="Agent Settings">
+                <i class="fas fa-cog"></i>
+            </button>
+        </div>
+        
+        <div class="agent-response">
+            <div class="response-icon">
+                <i class="fas fa-comments"></i>
+            </div>
+            <div class="response-title">Agent A ready for collaboration</div>
+            <div class="response-subtitle">Select an agent and start a session to begin!</div>
+        </div>
     </div>
 
-    <script>
-        // Global state management
-        let currentMode = 'manual-relay';
-        let sessionActive = false;
-        let currentRound = 0;
-        let messageCount = 0;
-        let sessionStartTime = null;
-        let sessionTimer = null;
+    <!-- Agent B Window -->
+    <div class="agent-window">
+        <div class="agent-header">
+            <div class="agent-title">
+                <i class="fas fa-robot agent-icon"></i>
+                Agent B
+            </div>
+            <div style="display: flex; align-items: center; gap: 8px;">
+                <div class="agent-status">Ready</div>
+                <button class="agent-help" title="Agent B Guide">
+                    <i class="fas fa-question-circle"></i>
+                </button>
+            </div>
+        </div>
+        
+        <select class="agent-dropdown">
+            <option value="">Select Agent B...</option>
+            <option value="gpt-4o">GPT-4o</option>
+            <option value="chatgpt-4-turbo">ChatGPT 4 Turbo</option>
+            <option value="gemini-2-flash">Gemini 2.0 Flash</option>
+            <option value="meta-llama-3-3">Meta Llama 3.3</option>
+            <option value="deepseek-r1">DeepSeek R1</option>
+            <option value="wizardlm-2">WizardLM 2</option>
+            <option value="mixtral-8x22b">Mixtral 8x22B</option>
+            <option value="neural-chat">Neural Chat</option>
+            <option value="gemini-pro-1-5">Gemini Pro 1.5</option>
+            <option value="yi-large">Yi Large</option>
+            <option value="nous-hermes-3">Nous Hermes 3</option>
+            <option value="dolphin-mixtral">Dolphin Mixtral</option>
+            <option value="perplexity-pro">Perplexity Pro</option>
+            <option value="command-r-plus">Command R+</option>
+            <option value="qwen-2-5-72b">Qwen 2.5 72B</option>
+            <option value="openhermes-2-5">OpenHermes 2.5</option>
+            <option value="mistral-large">Mistral Large</option>
+            <option value="llama-3-3-70b">Llama 3.3 70B</option>
+            <option value="starling-7b">Starling 7B</option>
+            <option value="claude-3-5-sonnet">Claude 3.5 Sonnet</option>
+        </select>
+        
+        <div class="agent-toolbar">
+            <button class="toolbar-btn" title="Reset Agent B">
+                <i class="fas fa-undo"></i>
+            </button>
+            <button class="toolbar-btn" title="Refresh Agent B">
+                <i class="fas fa-sync"></i>
+            </button>
+            <button class="toolbar-btn" title="Copy Response">
+                <i class="fas fa-copy"></i>
+            </button>
+            <button class="toolbar-btn" title="Edit Response">
+                <i class="fas fa-edit"></i>
+            </button>
+            <button class="toolbar-btn" title="Download Response">
+                <i class="fas fa-download"></i>
+            </button>
+            <button class="toolbar-btn" title="Agent Settings">
+                <i class="fas fa-cog"></i>
+            </button>
+        </div>
+        
+        <div class="agent-response">
+            <div class="response-icon">
+                <i class="fas fa-dice"></i>
+            </div>
+            <div class="response-title">Agent B ready for collaboration</div>
+            <div class="response-subtitle">Select an agent and start a session to begin!</div>
+        </div>
+    </div>
+</div>
 
-        // Initialize the application
-        document.addEventListener('DOMContentLoaded', function() {
-            console.log('UnityLab initialized');
-            initializeEventListeners();
-            updateUI();
+<script>
+// Agent Windows functionality - ready for backend integration
+console.log('Section 5: Agent Windows - Exact extraction from working site - Ready for backend');
+</script>
+
+<!-- ===== SECTION 6: LIVE CONVERSATION ===== -->
+
+<style>
+/* ===== SECTION 6 SCOPED STYLES ===== */
+.live-conversation-section {
+    background: rgba(15, 23, 42, 0.8);
+    backdrop-filter: blur(12px);
+    border: 1px solid rgba(71, 85, 105, 0.3);
+    border-radius: 12px;
+    padding: 20px;
+    margin-bottom: 24px;
+}
+
+.live-conversation-section .section-header {
+    display: flex;
+    align-items: center;
+    justify-content: space-between;
+    margin-bottom: 16px;
+    padding-bottom: 12px;
+    border-bottom: 1px solid rgba(71, 85, 105, 0.3);
+}
+
+.live-conversation-section .section-title {
+    display: flex;
+    align-items: center;
+    gap: 8px;
+    font-size: 18px;
+    font-weight: 600;
+    color: var(--text-primary);
+}
+
+.live-conversation-section .section-icon {
+    font-size: 20px;
+    color: var(--logo-primary);
+}
+
+.live-conversation-section .help-btn {
+    width: 20px;
+    height: 20px;
+    background: rgba(0, 180, 216, 0.15);
+    border: 1px solid rgba(0, 180, 216, 0.3);
+    border-radius: 4px;
+    color: var(--logo-primary);
+    font-size: 10px;
+    cursor: pointer;
+    display: flex;
+    align-items: center;
+    justify-content: center;
+    transition: all 0.3s ease;
+}
+
+.live-conversation-section .help-btn:hover {
+    background: rgba(0, 180, 216, 0.25);
+    border-color: var(--logo-primary);
+}
+
+.live-conversation-section .conversation-area {
+    min-height: 300px;
+    padding: 20px;
+    border: 1px solid rgba(71, 85, 105, 0.3);
+    border-radius: 8px;
+    background: rgba(30, 41, 59, 0.5);
+    display: flex;
+    flex-direction: column;
+    align-items: center;
+    justify-content: center;
+    text-align: center;
+    color: rgba(148, 163, 184, 0.8);
+    font-size: 14px;
+    line-height: 1.6;
+}
+
+.live-conversation-section .conversation-icon {
+    font-size: 48px;
+    color: rgba(71, 85, 105, 0.6);
+    margin-bottom: 12px;
+}
+
+.live-conversation-section .conversation-title {
+    font-size: 16px;
+    font-weight: 600;
+    color: var(--text-primary);
+    margin-bottom: 8px;
+}
+
+.live-conversation-section .conversation-subtitle {
+    font-size: 13px;
+    color: rgba(148, 163, 184, 0.7);
+}
+</style>
+
+<div class="live-conversation-section">
+    <div class="section-header">
+        <div class="section-title">
+            <i class="fas fa-comments section-icon"></i>
+            Live Conversation
+        </div>
+        <button class="help-btn" title="Live Conversation Guide">
+            <i class="fas fa-question-circle"></i>
+        </button>
+    </div>
+    
+    <div class="conversation-area">
+        <div class="conversation-icon">
+            <i class="fas fa-comment-dots"></i>
+        </div>
+        <div class="conversation-title">No conversation yet</div>
+        <div class="conversation-subtitle">Select agents and start a session to begin! All agent responses and conversations will appear here in real-time.</div>
+    </div>
+</div>
+
+<!-- ===== SECTION 7: AI SYNTHESIS & SUMMARY ===== -->
+
+<style>
+/* ===== SECTION 7 SCOPED STYLES ===== */
+.synthesis-section {
+    background: rgba(15, 23, 42, 0.8);
+    backdrop-filter: blur(12px);
+    border: 1px solid rgba(71, 85, 105, 0.3);
+    border-radius: 12px;
+    padding: 20px;
+    margin-bottom: 24px;
+}
+
+.synthesis-section .section-header {
+    display: flex;
+    align-items: center;
+    justify-content: space-between;
+    margin-bottom: 16px;
+    padding-bottom: 12px;
+    border-bottom: 1px solid rgba(71, 85, 105, 0.3);
+}
+
+.synthesis-section .section-title {
+    display: flex;
+    align-items: center;
+    gap: 8px;
+    font-size: 18px;
+    font-weight: 600;
+    color: var(--text-primary);
+}
+
+.synthesis-section .section-icon {
+    font-size: 20px;
+    color: var(--logo-primary);
+}
+
+.synthesis-section .help-btn {
+    width: 20px;
+    height: 20px;
+    background: rgba(0, 180, 216, 0.15);
+    border: 1px solid rgba(0, 180, 216, 0.3);
+    border-radius: 4px;
+    color: var(--logo-primary);
+    font-size: 10px;
+    cursor: pointer;
+    display: flex;
+    align-items: center;
+    justify-content: center;
+    transition: all 0.3s ease;
+}
+
+.synthesis-section .help-btn:hover {
+    background: rgba(0, 180, 216, 0.25);
+    border-color: var(--logo-primary);
+}
+
+.synthesis-section .synthesis-area {
+    min-height: 200px;
+    padding: 20px;
+    border: 1px solid rgba(71, 85, 105, 0.3);
+    border-radius: 8px;
+    background: rgba(30, 41, 59, 0.5);
+    display: flex;
+    flex-direction: column;
+    align-items: center;
+    justify-content: center;
+    text-align: center;
+    color: rgba(148, 163, 184, 0.8);
+    font-size: 14px;
+    line-height: 1.6;
+}
+
+.synthesis-section .synthesis-icon {
+    font-size: 48px;
+    color: rgba(71, 85, 105, 0.6);
+    margin-bottom: 12px;
+}
+
+.synthesis-section .synthesis-title {
+    font-size: 16px;
+    font-weight: 600;
+    color: var(--text-primary);
+    margin-bottom: 8px;
+}
+
+.synthesis-section .synthesis-subtitle {
+    font-size: 13px;
+    color: rgba(148, 163, 184, 0.7);
+}
+</style>
+
+<div class="synthesis-section">
+    <div class="section-header">
+        <div class="section-title">
+            <i class="fas fa-brain section-icon"></i>
+            AI Synthesis & Summary
+        </div>
+        <button class="help-btn" title="AI Synthesis Guide">
+            <i class="fas fa-question-circle"></i>
+        </button>
+    </div>
+    
+    <div class="synthesis-area">
+        <div class="synthesis-icon">
+            <i class="fas fa-lightbulb"></i>
+        </div>
+        <div class="synthesis-title">Ready for synthesis</div>
+        <div class="synthesis-subtitle">AI-powered analysis and insights will appear here as conversations develop.</div>
+    </div>
+</div>
+
+<!-- ===== SECTION 8: SESSION MEMORY ===== -->
+
+<style>
+/* ===== SECTION 8 SCOPED STYLES ===== */
+.session-memory-section {
+    background: rgba(15, 23, 42, 0.8);
+    backdrop-filter: blur(12px);
+    border: 1px solid rgba(71, 85, 105, 0.3);
+    border-radius: 12px;
+    padding: 20px;
+    margin-bottom: 24px;
+}
+
+.session-memory-section .section-header {
+    display: flex;
+    align-items: center;
+    justify-content: space-between;
+    margin-bottom: 16px;
+    padding-bottom: 12px;
+    border-bottom: 1px solid rgba(71, 85, 105, 0.3);
+}
+
+.session-memory-section .section-title {
+    display: flex;
+    align-items: center;
+    gap: 8px;
+    font-size: 18px;
+    font-weight: 600;
+    color: var(--text-primary);
+}
+
+.session-memory-section .section-icon {
+    font-size: 20px;
+    color: var(--logo-primary);
+}
+
+.session-memory-section .help-btn {
+    width: 20px;
+    height: 20px;
+    background: rgba(0, 180, 216, 0.15);
+    border: 1px solid rgba(0, 180, 216, 0.3);
+    border-radius: 4px;
+    color: var(--logo-primary);
+    font-size: 10px;
+    cursor: pointer;
+    display: flex;
+    align-items: center;
+    justify-content: center;
+    transition: all 0.3s ease;
+}
+
+.session-memory-section .help-btn:hover {
+    background: rgba(0, 180, 216, 0.25);
+    border-color: var(--logo-primary);
+}
+
+.session-memory-section .memory-controls {
+    display: flex;
+    gap: 12px;
+    margin-bottom: 16px;
+    flex-wrap: wrap;
+}
+
+.session-memory-section .memory-btn {
+    padding: 8px 16px;
+    border: 1px solid rgba(71, 85, 105, 0.3);
+    border-radius: 6px;
+    background: rgba(30, 41, 59, 0.8);
+    color: var(--text-primary);
+    font-size: 12px;
+    cursor: pointer;
+    transition: all 0.2s ease;
+    display: flex;
+    align-items: center;
+    gap: 6px;
+}
+
+.session-memory-section .memory-btn:hover {
+    background: rgba(51, 65, 85, 0.8);
+    border-color: var(--logo-primary);
+}
+
+.session-memory-section .memory-status {
+    padding: 16px;
+    border: 1px solid rgba(71, 85, 105, 0.3);
+    border-radius: 8px;
+    background: rgba(30, 41, 59, 0.5);
+    color: rgba(148, 163, 184, 0.8);
+    font-size: 13px;
+    line-height: 1.5;
+}
+
+.session-memory-section .status-item {
+    display: flex;
+    justify-content: space-between;
+    margin-bottom: 8px;
+}
+
+.session-memory-section .status-label {
+    color: var(--text-secondary);
+}
+
+.session-memory-section .status-value {
+    color: var(--logo-primary);
+    font-weight: 600;
+}
+</style>
+
+<div class="session-memory-section">
+    <div class="section-header">
+        <div class="section-title">
+            <i class="fas fa-save section-icon"></i>
+            Session Memory
+        </div>
+        <button class="help-btn" title="Session Memory Guide">
+            <i class="fas fa-question-circle"></i>
+        </button>
+    </div>
+    
+    <div class="memory-controls">
+        <button class="memory-btn">
+            <i class="fas fa-file-pdf"></i>
+            Export PDF
+        </button>
+        <button class="memory-btn">
+            <i class="fas fa-file-code"></i>
+            Export JSON
+        </button>
+        <button class="memory-btn">
+            <i class="fas fa-file-alt"></i>
+            Export TXT
+        </button>
+        <button class="memory-btn">
+            <i class="fas fa-upload"></i>
+            Upload Session
+        </button>
+        <button class="memory-btn">
+            <i class="fas fa-trash"></i>
+            Clear Session
+        </button>
+    </div>
+    
+    <div class="memory-status">
+        <div class="status-item">
+            <span class="status-label">System</span>
+            <span class="status-value">Revolutionary AI orchestration platform initialized. Infinite AI combinations ready!</span>
+        </div>
+        <div class="status-item">
+            <span class="status-label">Status</span>
+            <span class="status-value">Session ready for multi-agent collaboration</span>
+        </div>
+    </div>
+</div>
+
+<!-- ===== SECTION 9: LIVE DIAGNOSTICS ===== -->
+
+<style>
+/* ===== SECTION 9 SCOPED STYLES ===== */
+.diagnostics-section {
+    background: rgba(15, 23, 42, 0.8);
+    backdrop-filter: blur(12px);
+    border: 1px solid rgba(71, 85, 105, 0.3);
+    border-radius: 12px;
+    padding: 20px;
+}
+
+.diagnostics-section .section-header {
+    display: flex;
+    align-items: center;
+    justify-content: space-between;
+    margin-bottom: 16px;
+    padding-bottom: 12px;
+    border-bottom: 1px solid rgba(71, 85, 105, 0.3);
+}
+
+.diagnostics-section .section-title {
+    display: flex;
+    align-items: center;
+    gap: 8px;
+    font-size: 18px;
+    font-weight: 600;
+    color: var(--text-primary);
+}
+
+.diagnostics-section .section-icon {
+    font-size: 20px;
+    color: var(--logo-primary);
+}
+
+.diagnostics-section .help-btn {
+    width: 20px;
+    height: 20px;
+    background: rgba(0, 180, 216, 0.15);
+    border: 1px solid rgba(0, 180, 216, 0.3);
+    border-radius: 4px;
+    color: var(--logo-primary);
+    font-size: 10px;
+    cursor: pointer;
+    display: flex;
+    align-items: center;
+    justify-content: center;
+    transition: all 0.3s ease;
+}
+
+.diagnostics-section .help-btn:hover {
+    background: rgba(0, 180, 216, 0.25);
+    border-color: var(--logo-primary);
+}
+
+.diagnostics-section .diagnostics-grid {
+    display: grid;
+    grid-template-columns: repeat(auto-fit, minmax(200px, 1fr));
+    gap: 16px;
+    margin-bottom: 20px;
+}
+
+.diagnostics-section .diagnostic-card {
+    padding: 16px;
+    border: 1px solid rgba(71, 85, 105, 0.3);
+    border-radius: 8px;
+    background: rgba(30, 41, 59, 0.5);
+    text-align: center;
+}
+
+.diagnostics-section .diagnostic-value {
+    font-size: 24px;
+    font-weight: 700;
+    color: var(--logo-primary);
+    margin-bottom: 4px;
+}
+
+.diagnostics-section .diagnostic-label {
+    font-size: 12px;
+    color: var(--text-secondary);
+    text-transform: uppercase;
+    letter-spacing: 0.5px;
+}
+
+.diagnostics-section .system-status {
+    display: grid;
+    grid-template-columns: 1fr 1fr;
+    gap: 16px;
+}
+
+.diagnostics-section .status-card {
+    padding: 16px;
+    border: 1px solid rgba(71, 85, 105, 0.3);
+    border-radius: 8px;
+    background: rgba(30, 41, 59, 0.5);
+}
+
+.diagnostics-section .status-title {
+    font-size: 14px;
+    font-weight: 600;
+    color: var(--text-primary);
+    margin-bottom: 8px;
+}
+
+.diagnostics-section .status-content {
+    font-size: 12px;
+    color: var(--text-secondary);
+    line-height: 1.4;
+}
+
+.diagnostics-section .status-indicator {
+    display: inline-flex;
+    align-items: center;
+    gap: 6px;
+    color: var(--success);
+    font-weight: 600;
+}
+
+.diagnostics-section .status-dot {
+    width: 8px;
+    height: 8px;
+    border-radius: 50%;
+    background: var(--success);
+}
+
+@media (max-width: 768px) {
+    .diagnostics-section .system-status {
+        grid-template-columns: 1fr;
+    }
+}
+</style>
+
+<div class="diagnostics-section">
+    <div class="section-header">
+        <div class="section-title">
+            <i class="fas fa-chart-line section-icon"></i>
+            Live Diagnostics
+        </div>
+        <button class="help-btn" title="Live Diagnostics Guide">
+            <i class="fas fa-question-circle"></i>
+        </button>
+    </div>
+    
+    <div class="diagnostics-grid">
+        <div class="diagnostic-card">
+            <div class="diagnostic-value">0s</div>
+            <div class="diagnostic-label">Session Time</div>
+        </div>
+        <div class="diagnostic-card">
+            <div class="diagnostic-value">0</div>
+            <div class="diagnostic-label">Total Messages</div>
+        </div>
+        <div class="diagnostic-card">
+            <div class="diagnostic-value">0</div>
+            <div class="diagnostic-label">Current Round</div>
+        </div>
+        <div class="diagnostic-card">
+            <div class="diagnostic-value">0</div>
+            <div class="diagnostic-label">Active Agents</div>
+        </div>
+    </div>
+    
+    <div class="system-status">
+        <div class="status-card">
+            <div class="status-title">API Status</div>
+            <div class="status-content">
+                <div class="status-indicator">
+                    <span class="status-dot"></span>
+                    Real AI Backend Connected
+                </div>
+            </div>
+        </div>
+        <div class="status-card">
+            <div class="status-title">Current Session</div>
+            <div class="status-content">
+                Session ID: None
+            </div>
+        </div>
+    </div>
+</div>
+
+<script>
+// ======= COMPLETE BACKEND INTEGRATION =======
+const API_BASE_URL = 'https://web-production-cdd5d.up.railway.app';
+
+let currentSession = null;
+let sessionStartTime = null;
+let messageCount = 0;
+let roundCount = 0;
+let isSessionActive = false;
+let selectedMode = 'manual';
+
+// Agent Configuration
+const AGENT_CONFIG = {
+    'gpt4o': { name: 'GPT-4o', endpoint: "api/chat" },
+    'chatgpt4': { name: 'ChatGPT 4 Turbo', endpoint: "api/chat" },
+    'gemini2': { name: 'Gemini 2.0 Flash', endpoint: "api/chat" },
+    'llama': { name: 'Meta Llama 3.3', endpoint: "api/chat" },
+    'deepseek': { name: 'DeepSeek R1', endpoint: "api/chat" },
+    'wizardlm2': { name: 'WizardLM 2', endpoint: "api/chat" },
+    'mixtral8x22b': { name: 'Mixtral 8x22B', endpoint: "api/chat" },
+    'neuralchat': { name: 'Neural Chat', endpoint: "api/chat" },
+    'gemini15': { name: 'Gemini Pro 1.5', endpoint: "api/chat" },
+    'yilarge': { name: 'Yi Large', endpoint: "api/chat" },
+    'noushermes3': { name: 'Nous Hermes 3', endpoint: "api/chat" },
+    'dolphinmixtral': { name: 'Dolphin Mixtral', endpoint: "api/chat" },
+    'claude35sonnet': { name: 'Claude 3.5 Sonnet', endpoint: "api/chat" },
+    'commandrplus': { name: 'Command R+', endpoint: "api/chat" },
+    'perplexitypro': { name: 'Perplexity Pro', endpoint: "api/chat" },
+    'qwen25': { name: 'Qwen 2.5', endpoint: "api/chat" },
+    'mistralarge': { name: 'Mistral Large', endpoint: "api/chat" },
+    'llama31405b': { name: 'Llama 3.1 405B', endpoint: "api/chat" },
+    'grok2': { name: 'Grok 2', endpoint: "api/chat" },
+    'o1preview': { name: 'O1 Preview', endpoint: "api/chat" }
+};
+
+// Initialize the application
+document.addEventListener('DOMContentLoaded', function() {
+    console.log('UnityLab Frontend Initialized');
+    initializeEventListeners();
+    testConnection();
+    updateDiagnostics();
+});
+
+function initializeEventListeners() {
+    // Session controls
+    document.getElementById('start-session')?.addEventListener('click', startSession);
+    document.getElementById('next-step')?.addEventListener('click', nextStep);
+    document.getElementById('pause-session')?.addEventListener('click', pauseSession);
+    document.getElementById('stop-session')?.addEventListener('click', stopSession);
+    document.getElementById('clear-all')?.addEventListener('click', clearAll);
+    
+    // Agent selection
+    document.getElementById('agent-a-select')?.addEventListener('change', () => handleAgentSelection('a'));
+    document.getElementById('agent-b-select')?.addEventListener('change', () => handleAgentSelection('b'));
+    
+    // Voice input buttons
+    document.getElementById('voice-input-btn')?.addEventListener('click', startVoiceInput);
+    document.getElementById('voice-human-btn')?.addEventListener('click', startHumanVoiceInput);
+}
+
+async function startSession() {
+    const agentA = document.getElementById('agent-a-select')?.value;
+    const agentB = document.getElementById('agent-b-select')?.value;
+    const prompt = document.getElementById('initial-prompt')?.value.trim();
+
+    if (!agentA && !agentB) {
+        alert("Please select at least one agent");
+        return;
+    }
+
+    if (!prompt) {
+        alert("Please enter an initial prompt");
+        return;
+    }
+
+    try {
+        updateSessionStatus('Starting session...');
+        
+        const response = await fetch(`${API_BASE_URL}/api/agents/chat`, {
+            method: 'POST',
+            headers: { 
+                'Content-Type': 'application/json',
+                'Accept': 'application/json'
+            },
+            body: JSON.stringify({
+                agent_id: agentA || agentB,
+                message: prompt,
+                session_id: currentSession
+            })
         });
 
-        function initializeEventListeners() {
-            // Orchestration mode buttons
-            document.querySelectorAll('.orchestration-btn').forEach(btn => {
-                btn.addEventListener('click', function() {
-                    document.querySelectorAll('.orchestration-btn').forEach(b => b.classList.remove('active'));
-                    this.classList.add('active');
-                    currentMode = this.dataset.mode;
-                    document.getElementById('current-mode').textContent = this.querySelector('.orchestration-title').textContent;
-                    
-                    // Show/hide human simulator section
-                    const humanSimulator = document.getElementById('human-simulator');
-                    if (currentMode === 'human-simulator') {
-                        humanSimulator.style.display = 'block';
-                        humanSimulator.scrollIntoView({ behavior: 'smooth' });
-                    } else {
-                        humanSimulator.style.display = 'none';
-                    }
-                    
-                    console.log('Orchestration mode changed to:', currentMode);
-                });
-            });
-
-            // Session control buttons
-            document.getElementById('start-session').addEventListener('click', startSession);
-            document.getElementById('next-agent').addEventListener('click', nextAgent);
-            document.getElementById('pause-session').addEventListener('click', pauseSession);
-            document.getElementById('stop-session').addEventListener('click', stopSession);
-            document.getElementById('clear-all').addEventListener('click', clearAll);
-
-            // Human simulator buttons
-            document.getElementById('start-simulator').addEventListener('click', startSimulator);
-            document.getElementById('pause-simulator').addEventListener('click', pauseSimulator);
-            document.getElementById('stop-simulator').addEventListener('click', stopSimulator);
-
-            // Mode buttons for human simulator
-            document.querySelectorAll('.mode-btn').forEach(btn => {
-                btn.addEventListener('click', function() {
-                    document.querySelectorAll('.mode-btn').forEach(b => b.classList.remove('active'));
-                    this.classList.add('active');
-                    console.log('Collaboration mode selected:', this.dataset.mode);
-                });
-            });
-
-            // Slider functionality
-            document.getElementById('simulator-rounds').addEventListener('input', function() {
-                document.querySelector('.rounds-display').textContent = this.value;
-            });
-
-            // Strategy select functionality
-            document.getElementById('strategy-mode').addEventListener('change', function() {
-                document.getElementById('current-strategy').textContent = this.options[this.selectedIndex].text.split(' ')[0];
-            });
-
-            // Agent selection handlers
-            document.getElementById('agent-a-select').addEventListener('change', function() {
-                if (this.value) {
-                    console.log('Agent A selected:', this.value);
-                    document.getElementById('active-agent').textContent = 'Agent A';
-                    updateActiveAgents();
-                }
-            });
-
-            document.getElementById('agent-b-select').addEventListener('change', function() {
-                if (this.value) {
-                    console.log('Agent B selected:', this.value);
-                    document.getElementById('active-agent').textContent = 'Agent B';
-                    updateActiveAgents();
-                }
-            });
-
-            // Voice buttons
-            document.querySelectorAll('.voice-btn').forEach(btn => {
-                btn.addEventListener('click', function() {
-                    toggleVoiceRecording(this);
-                });
-            });
-
-            // Dropdown functionality
-            document.querySelectorAll('.dropdown').forEach(dropdown => {
-                const toggle = dropdown.querySelector('.dropdown-toggle');
-                const menu = dropdown.querySelector('.dropdown-menu');
-                
-                toggle.addEventListener('click', function(e) {
-                    e.stopPropagation();
-                    dropdown.classList.toggle('active');
-                });
-                
-                document.addEventListener('click', function() {
-                    dropdown.classList.remove('active');
-                });
-            });
-
-            // Help buttons
-            document.querySelectorAll('.help-btn').forEach(btn => {
-                btn.addEventListener('click', function() {
-                    console.log('Help requested for:', this.title);
-                });
-            });
+        if (!response.ok) {
+            throw new Error(`HTTP error! status: ${response.status}`);
         }
 
-        function startSession() {
-            if (!sessionActive) {
-                sessionActive = true;
-                sessionStartTime = Date.now();
-                document.getElementById('session-status').textContent = 'Active';
-                document.getElementById('start-session').textContent = 'Resume Session';
-                startSessionTimer();
-                console.log('Session started');
+        const data = await response.json();
+        
+        if (data.status === 'success') {
+            currentSession = data.session_id || generateSessionId();
+            sessionStartTime = new Date();
+            isSessionActive = true;
+            messageCount = 1;
+            roundCount = 1;
+            
+            updateSessionControls(true);
+            updateSessionStatus('Active');
+            displayAgentResponse(agentA || agentB, data.response || data.message);
+            updateDiagnostics();
+        } else {
+            throw new Error(data.error || 'Unknown error occurred');
+        }
+        
+    } catch (error) {
+        console.error('Session start error:', error);
+        updateSessionStatus('Error: ' + error.message);
+        alert('Failed to start session: ' + error.message);
+    }
+}
+
+function displayAgentResponse(agentId, response) {
+    const agentName = AGENT_CONFIG[agentId]?.name || agentId;
+    const responseContainer = document.getElementById(`agent-${agentId === document.getElementById('agent-a-select')?.value ? 'a' : 'b'}-response`);
+    
+    if (responseContainer) {
+        responseContainer.innerHTML = `
+            <div class="agent-message">
+                <div class="message-header">
+                    <strong>${agentName}</strong>
+                    <span class="timestamp">${new Date().toLocaleTimeString()}</span>
+                </div>
+                <div class="message-content">${response}</div>
+            </div>
+        `;
+    }
+}
+
+function updateSessionControls(active) {
+    const startBtn = document.getElementById('start-session');
+    const nextBtn = document.getElementById('next-step');
+    const pauseBtn = document.getElementById('pause-session');
+    const stopBtn = document.getElementById('stop-session');
+    
+    if (startBtn) startBtn.disabled = active;
+    if (nextBtn) nextBtn.disabled = !active;
+    if (pauseBtn) pauseBtn.disabled = !active;
+    if (stopBtn) stopBtn.disabled = !active;
+}
+
+function updateSessionStatus(status) {
+    const statusElement = document.getElementById('session-status');
+    if (statusElement) {
+        statusElement.textContent = status;
+    }
+}
+
+function updateDiagnostics() {
+    // Update diagnostic values
+    const sessionTime = sessionStartTime ? Math.floor((new Date() - sessionStartTime) / 1000) : 0;
+    
+    document.querySelector('.diagnostic-card .diagnostic-value')?.textContent = sessionTime + 's';
+    document.querySelectorAll('.diagnostic-card .diagnostic-value')[1]?.textContent = messageCount;
+    document.querySelectorAll('.diagnostic-card .diagnostic-value')[2]?.textContent = roundCount;
+    
+    // Update counters in status boxes
+    document.getElementById('completed-rounds')?.textContent = roundCount;
+    document.getElementById('message-count')?.textContent = messageCount;
+}
+
+async function testConnection() {
+    try {
+        const response = await fetch(`${API_BASE_URL}/health`);
+        const data = await response.json();
+        
+        if (data.status === 'healthy') {
+            console.log('Backend connection successful:', data);
+            updateConnectionStatus(true);
+        } else {
+            throw new Error('Backend unhealthy');
+        }
+    } catch (error) {
+        console.error('Backend connection failed:', error);
+        updateConnectionStatus(false);
+    }
+}
+
+function updateConnectionStatus(connected) {
+    const statusDot = document.querySelector('.status-dot');
+    const statusText = document.querySelector('.status-text');
+    
+    if (statusDot && statusText) {
+        if (connected) {
+            statusDot.style.background = 'var(--success)';
+            statusText.textContent = 'System Online';
+        } else {
+            statusDot.style.background = 'var(--error)';
+            statusText.textContent = 'System Offline';
+        }
+    }
+}
+
+function generateSessionId() {
+    return 'session_' + Date.now() + '_' + Math.random().toString(36).substr(2, 9);
+}
+
+function handleAgentSelection(agent) {
+    const select = document.getElementById(`agent-${agent}-select`);
+    const container = document.getElementById(`agent-${agent}-container`);
+    const response = document.getElementById(`agent-${agent}-response`);
+    
+    if (select?.value) {
+        container?.classList.add('active');
+        const agentName = AGENT_CONFIG[select.value]?.name || select.value;
+        if (response) {
+            response.innerHTML = `
+                <div style="text-align: center; color: var(--logo-primary);">
+                    <i class="fas fa-robot" style="font-size: 24px; margin-bottom: 8px;"></i>
+                    <h3>${agentName} Selected</h3>
+                    <p>Ready for collaboration</p>
+                </div>
+            `;
+        }
+        updateDiagnostics();
+    } else {
+        container?.classList.remove('active');
+        if (response) {
+            response.innerHTML = `
+                <div class="empty-state">
+                    <i class="fas fa-robot"></i>
+                    <h3>Agent ${agent.toUpperCase()} ready for collaboration</h3>
+                    <p>Select an agent and start a session to begin!</p>
+                </div>
+            `;
+        }
+    }
+}
+
+async function nextStep() {
+    if (!isSessionActive) return;
+    
+    const agentA = document.getElementById('agent-a-select')?.value;
+    const agentB = document.getElementById('agent-b-select')?.value;
+    const humanInput = document.getElementById('human-input')?.value.trim();
+    
+    // Determine next agent (alternate between A and B)
+    const nextAgent = (roundCount % 2 === 1) ? agentB : agentA;
+    
+    if (!nextAgent) {
+        alert('Please select both agents for relay mode');
+        return;
+    }
+    
+    try {
+        const response = await fetch(`${API_BASE_URL}/api/agents/chat`, {
+            method: 'POST',
+            headers: { 
+                'Content-Type': 'application/json',
+                'Accept': 'application/json'
+            },
+            body: JSON.stringify({
+                agent_id: nextAgent,
+                message: humanInput || "Continue the conversation",
+                session_id: currentSession
+            })
+        });
+
+        if (!response.ok) {
+            throw new Error(`HTTP error! status: ${response.status}`);
+        }
+
+        const data = await response.json();
+        
+        if (data.status === 'success') {
+            displayAgentResponse(nextAgent, data.response || data.message);
+            roundCount++;
+            messageCount++;
+            updateDiagnostics();
+            
+            // Clear human input
+            if (document.getElementById('human-input')) {
+                document.getElementById('human-input').value = '';
             }
+        } else {
+            throw new Error(data.error || 'Unknown error occurred');
         }
+        
+    } catch (error) {
+        console.error('Next step error:', error);
+        alert('Failed to continue session: ' + error.message);
+    }
+}
 
-        function nextAgent() {
-            if (sessionActive) {
-                currentRound++;
-                messageCount++;
-                document.getElementById('completed-rounds').textContent = currentRound;
-                document.getElementById('message-count').textContent = messageCount;
-                console.log('Next agent triggered, round:', currentRound);
-            }
+function pauseSession() {
+    isSessionActive = !isSessionActive;
+    const pauseBtn = document.getElementById('pause-session');
+    
+    if (pauseBtn) {
+        if (isSessionActive) {
+            pauseBtn.innerHTML = '<i class="fas fa-pause"></i> Pause';
+            updateSessionStatus('Active');
+        } else {
+            pauseBtn.innerHTML = '<i class="fas fa-play"></i> Resume';
+            updateSessionStatus('Paused');
         }
+    }
+}
 
-        function pauseSession() {
-            if (sessionActive) {
-                sessionActive = false;
-                document.getElementById('session-status').textContent = 'Paused';
-                document.getElementById('pause-session').textContent = 'Resume';
-                stopSessionTimer();
-                console.log('Session paused');
-            } else {
-                sessionActive = true;
-                document.getElementById('session-status').textContent = 'Active';
-                document.getElementById('pause-session').textContent = 'Pause';
-                startSessionTimer();
-                console.log('Session resumed');
-            }
-        }
+function stopSession() {
+    isSessionActive = false;
+    currentSession = null;
+    sessionStartTime = null;
+    messageCount = 0;
+    roundCount = 0;
+    
+    updateSessionControls(false);
+    updateSessionStatus('Inactive');
+    updateDiagnostics();
+    
+    // Reset agent responses
+    const agentAResponse = document.getElementById('agent-a-response');
+    const agentBResponse = document.getElementById('agent-b-response');
+    
+    if (agentAResponse) {
+        agentAResponse.innerHTML = `
+            <div class="empty-state">
+                <i class="fas fa-robot"></i>
+                <h3>Agent A ready for collaboration</h3>
+                <p>Select an agent and start a session to begin!</p>
+            </div>
+        `;
+    }
+    
+    if (agentBResponse) {
+        agentBResponse.innerHTML = `
+            <div class="empty-state">
+                <i class="fas fa-robot"></i>
+                <h3>Agent B ready for collaboration</h3>
+                <p>Select an agent and start a session to begin!</p>
+            </div>
+        `;
+    }
+}
 
-        function stopSession() {
-            sessionActive = false;
-            document.getElementById('session-status').textContent = 'Inactive';
-            document.getElementById('start-session').textContent = 'Start Session';
-            document.getElementById('pause-session').textContent = 'Pause';
-            stopSessionTimer();
-            console.log('Session stopped');
-        }
+function clearAll() {
+    if (confirm('Are you sure you want to clear all data? This action cannot be undone.')) {
+        stopSession();
+        
+        // Clear form inputs
+        document.getElementById('initial-prompt')?.value = '';
+        document.getElementById('human-input')?.value = '';
+        document.getElementById('agent-a-select')?.value = '';
+        document.getElementById('agent-b-select')?.value = '';
+        
+        // Reset agent selections
+        handleAgentSelection('a');
+        handleAgentSelection('b');
+        
+        alert('All data cleared successfully!');
+    }
+}
 
-        function clearAll() {
-            stopSession();
-            currentRound = 0;
-            messageCount = 0;
-            document.getElementById('completed-rounds').textContent = '0';
-            document.getElementById('message-count').textContent = '0';
-            document.getElementById('session-time').textContent = '0s';
-            document.getElementById('active-agent').textContent = '-';
-            document.getElementById('agent-a-select').value = '';
-            document.getElementById('agent-b-select').value = '';
-            document.getElementById('initial-prompt').value = '';
-            document.getElementById('interjection-guidance').value = '';
-            updateActiveAgents();
-            console.log('All cleared');
-        }
+function startVoiceInput() {
+    // Voice input functionality - placeholder for now
+    alert('Voice input feature coming soon!');
+}
 
-        function startSimulator() {
-            console.log('Human Simulator started');
-            document.getElementById('simulator-round').textContent = '1';
-            document.getElementById('simulator-agent').textContent = 'Human Simulator';
-            document.getElementById('simulator-progress').textContent = '10%';
-        }
+function startHumanVoiceInput() {
+    // Human voice input functionality - placeholder for now
+    alert('Voice input feature coming soon!');
+}
 
-        function pauseSimulator() {
-            console.log('Human Simulator paused');
-        }
+// Sections 6-9 functionality - ready for backend integration
+console.log('UnityLab Frontend: Complete backend integration loaded');
+console.log('Backend URL:', API_BASE_URL);
+</script>
 
-        function stopSimulator() {
-            console.log('Human Simulator stopped');
-            document.getElementById('simulator-round').textContent = '0';
-            document.getElementById('simulator-agent').textContent = 'None';
-            document.getElementById('simulator-progress').textContent = '0%';
-        }
-
-        function toggleVoiceRecording(btn) {
-            btn.classList.toggle('recording');
-            if (btn.classList.contains('recording')) {
-                console.log('Voice recording started');
-                setTimeout(() => {
-                    btn.classList.remove('recording');
-                    console.log('Voice recording stopped');
-                }, 3000);
-            }
-        }
-
-        function startSessionTimer() {
-            sessionTimer = setInterval(() => {
-                if (sessionActive && sessionStartTime) {
-                    const elapsed = Math.floor((Date.now() - sessionStartTime) / 1000);
-                    document.getElementById('session-time').textContent = elapsed + 's';
-                }
-            }, 1000);
-        }
-
-        function stopSessionTimer() {
-            if (sessionTimer) {
-                clearInterval(sessionTimer);
-                sessionTimer = null;
-            }
-        }
-
-        function updateActiveAgents() {
-            const agentA = document.getElementById('agent-a-select').value;
-            const agentB = document.getElementById('agent-b-select').value;
-            let activeCount = 0;
-            if (agentA) activeCount++;
-            if (agentB) activeCount++;
-            document.getElementById('active-agents').textContent = activeCount;
-        }
-
-        function updateUI() {
-            // Set initial values
-            document.getElementById('current-mode').textContent = 'Manual Relay';
-            document.getElementById('session-status').textContent = 'Inactive';
-            document.getElementById('active-agent').textContent = '-';
-            document.getElementById('current-strategy').textContent = 'Balanced';
-            document.getElementById('completed-rounds').textContent = '0';
-            document.getElementById('message-count').textContent = '0';
-            document.getElementById('session-time').textContent = '0s';
-            document.getElementById('total-messages').textContent = '0';
-            document.getElementById('current-round').textContent = '0';
-            document.getElementById('active-agents').textContent = '0';
-        }
-    </script>
 </body>
 </html>
-
