@@ -1584,7 +1584,7 @@ function handleSessionControl(action) {
     
     switch(action) {
         case 'start':
-            startConversationSession();
+            startSession(); // Call the real API function
             break;
         case 'next':
             flashConversationButton(button);
