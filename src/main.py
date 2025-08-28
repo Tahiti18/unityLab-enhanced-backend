@@ -5,10 +5,10 @@ from datetime import datetime, timezone
 from flask import Flask, send_from_directory, jsonify, request
 from flask_cors import CORS, cross_origin
 
-# DON'T CHANGE THIS !!! (kept from your original)
+# --- Keep your original path insert (important for routes package imports) ---
 sys.path.insert(0, os.path.dirname(os.path.dirname(__file__)))
 
-# --- Import blueprints (your existing routes) ---
+# --- Import blueprints ---
 from routes.agents import agents_bp
 from routes.human_simulator import human_simulator_bp
 from routes.revolutionary_relay import revolutionary_relay_bp
@@ -24,15 +24,17 @@ STATIC_DIR = os.path.join(BASE_DIR, "static")
 
 app = Flask(__name__, static_folder=STATIC_DIR)
 
-# Config (unchanged)
+# Config
 app.config['SECRET_KEY'] = os.environ.get('SECRET_KEY', 'unitylab-ultimate-orchestration-engine-secret-key')
-app.config['SQLALCHEMY_DATABASE_URI'] = os.environ.get('DATABASE_URL', f"sqlite:///{os.path.join(BASE_DIR, 'database', 'app.db')}")
+app.config['SQLALCHEMY_DATABASE_URI'] = os.environ.get(
+    'DATABASE_URL',
+    f"sqlite:///{os.path.join(BASE_DIR, 'database', 'app.db')}"
+)
 app.config['SQLALCHEMY_TRACK_MODIFICATIONS'] = False
 
 # ----------------------------------------------------------------------------
-# CORS â robust defaults so frontend can POST without preflight failure
+# CORS â permissive for /api/* (tighten later if needed)
 # ----------------------------------------------------------------------------
-# Easiest, unblock-now setting: allow all origins for /api/* (you can tighten later)
 CORS(
     app,
     resources={r"/api/*": {"origins": "*"}},
@@ -42,15 +44,7 @@ CORS(
     expose_headers=["Content-Type"]
 )
 
-# If you prefer an allowlist instead of '*', replace above with e.g.:
-# CORS(app, resources={r"/api/*": {"origins": [
-#     "https://unitylab.io",
-#     "https://*.unitylab.io",
-#     "https://*.netlify.app",
-#     "http://localhost:3000"
-# ]}}, methods=["GET","POST","OPTIONS"], allow_headers=[...])
-
-# Convenience kwargs if you want to add @cross_origin on specific routes
+# Convenience kwargs for @cross_origin usage
 CORS_ALLOW_KW = dict(
     origins="*",
     methods=["GET", "POST", "OPTIONS"],
@@ -58,17 +52,14 @@ CORS_ALLOW_KW = dict(
 )
 
 # ----------------------------------------------------------------------------
-# Register blueprints (kept as in your current backend)
+# Register blueprints
 # ----------------------------------------------------------------------------
 app.register_blueprint(agents_bp, url_prefix='/api/agents')
 app.register_blueprint(human_simulator_bp, url_prefix='/api/human-simulator')
 app.register_blueprint(revolutionary_relay_bp, url_prefix='/api/revolutionary-relay')
 app.register_blueprint(payments_bp, url_prefix='/api/payments')
-
-# NOTE: You previously mounted the pair system under '/api/repair-system' for compatibility.
-# Keeping it unchanged so existing frontend calls don't break.
+# Historical compatibility: keep ai_pair_system mounted at /api/repair-system
 app.register_blueprint(ai_pair_system_bp, url_prefix='/api/repair-system')
-
 app.register_blueprint(conference_system_bp, url_prefix='/api/conference-system')
 
 # ----------------------------------------------------------------------------
@@ -77,7 +68,7 @@ app.register_blueprint(conference_system_bp, url_prefix='/api/conference-system'
 @app.route('/api/chat', methods=['POST', 'OPTIONS'])
 @cross_origin(**CORS_ALLOW_KW)
 def legacy_chat():
-    """Legacy chat endpoint - redirects to agents API"""
+    """Legacy chat endpoint - forwards to /api/agents/chat"""
     try:
         data = request.get_json(silent=True) or {}
         agent_id = data.get('agent') or data.get('agent_id') or 'gpt-4o'
@@ -85,16 +76,15 @@ def legacy_chat():
         if not message:
             return jsonify({'error': 'Message is required'}), 400
 
-        # Forward to unified agents API (absolute URL so it works behind proxies)
+        # Forward to unified agents API (absolute URL ensures proxy friendliness)
         import requests
         target = f"{request.host_url.rstrip('/')}/api/agents/chat"
-        resp = requests.post(target, json={'agent_id': agent_id, 'message': message}, timeout=60)
-
+        upstream = requests.post(target, json={'agent_id': agent_id, 'message': message}, timeout=60)
         try:
-            payload = resp.json()
+            payload = upstream.json()
         except Exception:
-            payload = {'error': 'Upstream did not return JSON', 'status': resp.status_code, 'text': resp.text}
-        return jsonify(payload), resp.status_code
+            payload = {'error': 'Upstream did not return JSON', 'status': upstream.status_code, 'text': upstream.text}
+        return jsonify(payload), upstream.status_code
     except Exception as e:
         return jsonify({'error': str(e)}), 500
 
@@ -127,15 +117,29 @@ def health_check():
     })
 
 # ----------------------------------------------------------------------------
-# Static / SPA root
+# Static / root
 # ----------------------------------------------------------------------------
 @app.route('/', methods=['GET'])
 def root():
+    # Serve your front-end entry (index.html) from static/
     return send_from_directory(app.static_folder, 'index.html')
 
 @app.route('/static/<path:filename>')
 def serve_static(filename):
     return send_from_directory(app.static_folder, filename)
+
+# Map common top-level assets that your front-end expects
+@app.route('/logo.png')
+def serve_logo():
+    return send_from_directory(app.static_folder, 'logo.png')
+
+@app.route('/favicon.ico')
+def serve_favicon():
+    # Optional if you have one; if missing this will 404 harmlessly
+    try:
+        return send_from_directory(app.static_folder, 'favicon.ico')
+    except Exception:
+        return ('', 204)
 
 # ----------------------------------------------------------------------------
 # Error handlers
@@ -162,7 +166,7 @@ def internal_error(error):
         'message': 'Please check logs for details'
     }), 500
 
-# Add permissive CORS headers on every response (belt & suspenders)
+# Add permissive CORS headers on every response
 @app.after_request
 def add_cors_headers(resp):
     resp.headers.setdefault('Access-Control-Allow-Origin', '*')
@@ -174,6 +178,19 @@ def add_cors_headers(resp):
 # Entrypoint
 # ----------------------------------------------------------------------------
 if __name__ == '__main__':
-    # Use PORT=8080 by default (matches your logs)
+    # Railway provides $PORT; default to 8080 to match your logs if not set
     port = int(os.environ.get('PORT', '8080'))
-    debug = os.environ.get('FLASK_DEBUG', 'False').lower()
+    debug = os.environ.get('FLASK_DEBUG', 'False').lower() == 'true'
+
+    print("ð UnityLab Enhanced Backend - AI Collaboration on Autopilot")
+    print("ð Features: Human Simulator + Repair System + Conference System")
+    print(f"ð¤ Total AI Agents: 20")
+    print(f"ð§  Human Simulator: AI clone development")
+    print(f"ð§ Repair System: AI debugging and repair")
+    print(f"ðï¸ Conference System: Multi-agent orchestration")
+    print(f"ð³ Payment Tiers: Free ($0), Basic ($19), Pro ($99), Expert ($499)")
+    print(f"ð Port: {port}")
+    print("ð READY FOR ULTIMATE AI COLLABORATION!")
+
+    # Flask dev server (okay on Railway for quick testing; swap to gunicorn for prod)
+    app.run(host='0.0.0.0', port=port, debug=debug)
