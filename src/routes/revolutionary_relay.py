@@ -1,118 +1,181 @@
-# src/routes/revolutionary_relay.py
+# routes/revolutionary_relay.py
+import os
 import uuid
 import logging
+import threading
 from datetime import datetime, timezone
-from concurrent.futures import ThreadPoolExecutor, as_completed
 
 import requests
 from flask import Blueprint, request, jsonify
 from flask_cors import cross_origin
 
 # -----------------------------------------------------------------------------
-# In-memory session store
+# Setup
 # -----------------------------------------------------------------------------
-SESSIONS = {}
-
-# Blueprint + logger
 revolutionary_relay_bp = Blueprint("revolutionary_relay", __name__)
 logger = logging.getLogger("revolutionary_relay")
 logger.setLevel(logging.INFO)
 
-# Defaults
-DEFAULT_AGENTS = ["gpt-4o", "mistral-large", "deepseek-r1"]  # override via JSON body
-MAX_WORKERS = 6
+OPENROUTER_API_KEY = os.getenv("OPENROUTER_API_KEY", "").strip()
+OPENROUTER_URL = "https://openrouter.ai/api/v1/chat/completions"
 
+# In-memory session store. (Swap to DB later if needed)
+# session schema:
+# {
+#   id, prompt, mode, status: running|completed|error,
+#   created_at, completed_at, progress (0..100),
+#   results: [{agent, model, response, error}], error
+# }
+SESSIONS = {}
+
+# Default agent set if /api/agents/list is unavailable
+FALLBACK_AGENTS = [
+    {"name": "gpt-4o",      "model": "openai/gpt-4o"},
+    {"name": "claude-3.5",  "model": "anthropic/claude-3.5-sonnet"},
+    {"name": "deepseek-r1", "model": "deepseek/deepseek-r1"},
+]
 
 # -----------------------------------------------------------------------------
 # Helpers
 # -----------------------------------------------------------------------------
+def _utc_now() -> str:
+    return datetime.now(timezone.utc).isoformat()
+
 def _new_session(prompt: str, mode: str) -> dict:
-    session_id = str(uuid.uuid4())
+    sid = str(uuid.uuid4())
     session = {
-        "session_id": session_id,
+        "id": sid,
         "prompt": prompt,
         "mode": mode,  # "expert_panel" | "conference_chain"
         "status": "running",
-        "created_at": datetime.now(timezone.utc).isoformat(),
+        "created_at": _utc_now(),
         "completed_at": None,
+        "progress": 0,
         "results": [],
         "error": None,
     }
-    SESSIONS[session_id] = session
-    logger.info(f"[RevolutionaryRelay] Started session {session_id} mode={mode}")
+    SESSIONS[sid] = session
+    logger.info(f"[Relay] session started id={sid} mode={mode}")
     return session
 
-
 def _complete_session(session_id: str, results: list):
-    sess = SESSIONS.get(session_id)
-    if not sess:
+    s = SESSIONS.get(session_id)
+    if not s:
         return
-    sess["results"] = results
-    sess["status"] = "completed"
-    sess["completed_at"] = datetime.now(timezone.utc).isoformat()
-    logger.info(f"[RevolutionaryRelay] Completed session {session_id}")
+    s["results"] = results
+    s["status"] = "completed"
+    s["completed_at"] = _utc_now()
+    s["progress"] = 100
+    logger.info(f"[Relay] session completed id={session_id}")
 
+def _error_session(session_id: str, message: str):
+    s = SESSIONS.get(session_id)
+    if not s:
+        return
+    s["status"] = "error"
+    s["error"] = message
+    s["completed_at"] = _utc_now()
+    s["progress"] = s.get("progress", 0)
+    logger.error(f"[Relay] session error id={session_id}: {message}")
 
-def _call_agent(base_url: str, agent_id: str, message: str) -> str:
+def _get_active_agents_from_backend() -> list:
     """
-    Call our own Agents API to keep all provider logic in one place.
-    Normalizes the response into a plain string.
+    Tries to fetch active agents from your own backend:
+      GET /api/agents/list  -> {"agents": {...}}
+    Falls back to 3 strong defaults if unreachable.
     """
     try:
-        url = f"{base_url}/api/agents/chat"
-        resp = requests.post(url, json={"agent_id": agent_id, "message": message}, timeout=90)
-        # Try to parse JSON; fall back to raw text
-        try:
-            data = resp.json()
-        except Exception:
-            data = {"raw": resp.text}
-
-        # Normalize common keys
-        for key in ("response", "message", "text", "content", "output"):
-            if isinstance(data.get(key), str):
-                return data[key]
-
-        # If provider wrapped content deeper, just return the JSON string
-        return str(data)
+        base = request.host_url.rstrip("/")
+        url = f"{base}/api/agents/list"
+        r = requests.get(url, timeout=10)
+        data = r.json()
+        agents_dict = data.get("agents", {})
+        # Keep only active ones; build list of {"name", "model"}
+        active = []
+        for key, v in agents_dict.items():
+            if v.get("active"):
+                active.append({"name": v.get("name", key), "model": v.get("model")})
+        if not active:
+            return FALLBACK_AGENTS
+        return active
     except Exception as e:
-        logger.exception(f"Agent call failed for {agent_id}")
-        return f"[ERROR from {agent_id}] {e}"
+        logger.warning(f"[Relay] could not load /api/agents/list: {e}")
+        return FALLBACK_AGENTS
 
-
-def _run_expert_panel(base_url: str, prompt: str, agents: list[str]) -> list[dict]:
-    """Run agents in parallel; independent responses."""
-    results = []
-    with ThreadPoolExecutor(max_workers=min(len(agents), MAX_WORKERS)) as ex:
-        futs = {ex.submit(_call_agent, base_url, a, prompt): a for a in agents}
-        for fut in as_completed(futs):
-            agent = futs[fut]
-            out = fut.result()
-            results.append({"agent": agent, "response": out})
-    return results
-
-
-def _run_conference_chain(base_url: str, prompt: str, agents: list[str]) -> list[dict]:
+def _call_openrouter(model: str, prompt: str) -> str:
     """
-    Sequential, sticky context: each agent sees the prompt plus a rolling
-    transcript of previous agents' outputs.
+    Calls OpenRouter model with the given prompt.
+    Requires env var OPENROUTER_API_KEY.
     """
-    results = []
-    rolling_context = ""
-    current_prompt = prompt
-
-    for agent in agents:
-        reply = _call_agent(base_url, agent, current_prompt)
-        results.append({"agent": agent, "response": reply})
-
-        # Update rolling context for next agent
-        rolling_context += f"\n\n[{agent}] {reply}"
-        current_prompt = (
-            f"{prompt}\n\nPrior context from other agents:\n{rolling_context}\n\n"
-            "Please build on the prior responses, avoid repeating points, "
-            "and move the discussion forward with concrete insights."
+    if not OPENROUTER_API_KEY:
+        raise RuntimeError(
+            "OPENROUTER_API_KEY is missing. Set it in Railway environment variables."
         )
-    return results
+    headers = {
+        "Authorization": f"Bearer {OPENROUTER_API_KEY}",
+        "Content-Type": "application/json",
+    }
+    body = {
+        "model": model,
+        "messages": [{"role": "user", "content": prompt}],
+    }
+    resp = requests.post(OPENROUTER_URL, headers=headers, json=body, timeout=60)
+    resp.raise_for_status()
+    data = resp.json()
+    return data["choices"][0]["message"]["content"]
 
+# -----------------------------------------------------------------------------
+# Workers (run in a background thread)
+# -----------------------------------------------------------------------------
+def _run_expert_panel(session_id: str):
+    s = SESSIONS.get(session_id)
+    if not s:
+        return
+    try:
+        agents = _get_active_agents_from_backend()
+        results = []
+        total = len(agents)
+        for idx, agent in enumerate(agents, start=1):
+            try:
+                out = _call_openrouter(agent["model"], s["prompt"])
+                results.append({"agent": agent["name"], "model": agent["model"], "response": out, "error": None})
+            except Exception as e:
+                results.append({"agent": agent["name"], "model": agent["model"], "response": None, "error": str(e)})
+            # update progress
+            s["progress"] = int(idx * 100 / max(total, 1))
+        _complete_session(session_id, results)
+    except Exception as e:
+        _error_session(session_id, str(e))
+
+def _run_conference_chain(session_id: str):
+    """
+    Sequential 'sticky' chain: each agent builds on prior output.
+    """
+    s = SESSIONS.get(session_id)
+    if not s:
+        return
+    try:
+        agents = _get_active_agents_from_backend()
+        running_context = s["prompt"]
+        results = []
+        total = len(agents)
+        for idx, agent in enumerate(agents, start=1):
+            try:
+                prompt = (
+                    f"Build on the evolving conference discussion below.\n\n"
+                    f"=== Current context ===\n{running_context}\n\n"
+                    f"=== Your task ===\nAdd the next best contribution (concise but substantive)."
+                )
+                out = _call_openrouter(agent["model"], prompt)
+                results.append({"agent": agent["name"], "model": agent["model"], "response": out, "error": None})
+                # grow context
+                running_context += f"\n\n[{agent['name']}]: {out}"
+            except Exception as e:
+                results.append({"agent": agent["name"], "model": agent["model"], "response": None, "error": str(e)})
+            s["progress"] = int(idx * 100 / max(total, 1))
+        _complete_session(session_id, results)
+    except Exception as e:
+        _error_session(session_id, str(e))
 
 # -----------------------------------------------------------------------------
 # Endpoints
@@ -120,68 +183,37 @@ def _run_conference_chain(base_url: str, prompt: str, agents: list[str]) -> list
 @revolutionary_relay_bp.route("/start-expert-panel", methods=["POST", "OPTIONS"])
 @cross_origin()
 def start_expert_panel():
-    """
-    Body:
-      { "prompt": "...", "agents": ["gpt-4o","mistral-large","deepseek-r1"]? }
-    Returns (synchronously completed for simplicity):
-      { session_id, status: "completed", mode, results: [...] }
-    """
-    try:
-        data = request.get_json(silent=True) or {}
-        prompt = data.get("prompt")
-        if not prompt:
-            return jsonify({"error": "Missing 'prompt'"}), 400
+    data = request.get_json(silent=True) or {}
+    prompt = data.get("prompt")
+    if not prompt:
+        return jsonify({"error": "Missing 'prompt'"}), 400
 
-        agents = data.get("agents") or DEFAULT_AGENTS
-        session = _new_session(prompt, "expert_panel")
+    session = _new_session(prompt, "expert_panel")
+    # Background run so the request returns immediately
+    threading.Thread(target=_run_expert_panel, args=(session["id"],), daemon=True).start()
 
-        base_url = request.host_url.rstrip("/")
-        results = _run_expert_panel(base_url, prompt, agents)
-        _complete_session(session["session_id"], results)
-
-        return jsonify({
-            "session_id": session["session_id"],
-            "status": "completed",
-            "mode": "expert_panel",
-            "results": results
-        }), 200
-    except Exception as e:
-        logger.exception("Failed to run expert panel")
-        return jsonify({"error": str(e)}), 500
-
+    return jsonify({
+        "session_id": session["id"],
+        "status": "started",
+        "mode": "expert_panel"
+    }), 200
 
 @revolutionary_relay_bp.route("/start-conference-chain", methods=["POST", "OPTIONS"])
 @cross_origin()
 def start_conference_chain():
-    """
-    Body:
-      { "prompt": "...", "agents": ["gpt-4o","mistral-large","deepseek-r1"]? }
-    Returns (synchronously completed for simplicity):
-      { session_id, status: "completed", mode, results: [...] }
-    """
-    try:
-        data = request.get_json(silent=True) or {}
-        prompt = data.get("prompt")
-        if not prompt:
-            return jsonify({"error": "Missing 'prompt'"}), 400
+    data = request.get_json(silent=True) or {}
+    prompt = data.get("prompt")
+    if not prompt:
+        return jsonify({"error": "Missing 'prompt'"}), 400
 
-        agents = data.get("agents") or DEFAULT_AGENTS
-        session = _new_session(prompt, "conference_chain")
+    session = _new_session(prompt, "conference_chain")
+    threading.Thread(target=_run_conference_chain, args=(session["id"],), daemon=True).start()
 
-        base_url = request.host_url.rstrip("/")
-        results = _run_conference_chain(base_url, prompt, agents)
-        _complete_session(session["session_id"], results)
-
-        return jsonify({
-            "session_id": session["session_id"],
-            "status": "completed",
-            "mode": "conference_chain",
-            "results": results
-        }), 200
-    except Exception as e:
-        logger.exception("Failed to run conference chain")
-        return jsonify({"error": str(e)}), 500
-
+    return jsonify({
+        "session_id": session["id"],
+        "status": "started",
+        "mode": "conference_chain"
+    }), 200
 
 @revolutionary_relay_bp.route("/session-status/<session_id>", methods=["GET"])
 @cross_origin()
@@ -192,11 +224,10 @@ def session_status(session_id):
     return jsonify({
         "session_id": session_id,
         "status": s["status"],
+        "progress": s.get("progress", 0),
         "created_at": s["created_at"],
         "completed_at": s.get("completed_at"),
-        "progress": 100 if s["status"] == "completed" else 0
     }), 200
-
 
 @revolutionary_relay_bp.route("/session-results/<session_id>", methods=["GET"])
 @cross_origin()
@@ -211,7 +242,6 @@ def session_results(session_id):
         "error": s.get("error"),
     }), 200
 
-
 @revolutionary_relay_bp.route("/generate-html-report/<session_id>", methods=["GET"])
 @cross_origin()
 def generate_html_report(session_id):
@@ -219,19 +249,28 @@ def generate_html_report(session_id):
     if not s:
         return jsonify({"error": "Session not found"}), 404
 
+    items = []
+    for r in s["results"]:
+        if r.get("error"):
+            items.append(f"<li><b>{r['agent']}</b> ({r['model']}): <span style='color:#f88'>ERROR: {r['error']}</span></li>")
+        else:
+            items.append(f"<li><b>{r['agent']}</b> ({r['model']}): {r['response']}</li>")
+
     html = f"""
     <html>
-      <head><title>Revolutionary Relay Report</title></head>
-      <body style='font-family:Arial; background:#0a0f1c; color:white; padding:20px;'>
+      <head>
+        <title>Revolutionary Relay Report</title>
+        <meta charset="utf-8" />
+      </head>
+      <body style="font-family:Arial; background:#0a0f1c; color:#e8f6ff; padding:24px;">
         <h1>Session Report</h1>
         <p><b>Session ID:</b> {session_id}</p>
         <p><b>Status:</b> {s['status']}</p>
         <p><b>Mode:</b> {s['mode']}</p>
         <p><b>Prompt:</b> {s['prompt']}</p>
+        <p><b>Progress:</b> {s.get('progress',0)}%</p>
         <h2>Results</h2>
-        <ul>
-          {''.join(f"<li><b>{r['agent']}</b>: {r['response']}</li>" for r in s['results'])}
-        </ul>
+        <ul>{''.join(items)}</ul>
       </body>
     </html>
     """
