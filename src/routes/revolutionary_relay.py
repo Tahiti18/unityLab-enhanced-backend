@@ -16,10 +16,10 @@ revolutionary_relay_bp = Blueprint("revolutionary_relay", __name__)
 logger = logging.getLogger("revolutionary_relay")
 logger.setLevel(logging.INFO)
 
-OPENROUTER_API_KEY = os.getenv("OPENROUTER_API_KEY", "").strip()
+OPENROUTER_API_KEY = (os.getenv("OPENROUTER_API_KEY") or "").strip()
 OPENROUTER_URL = "https://openrouter.ai/api/v1/chat/completions"
 
-# In-memory session store. (Swap to DB later if needed)
+# In-memory session store. (Swap to DB/Redis later if needed)
 # session schema:
 # {
 #   id, prompt, mode, status: running|completed|error,
@@ -80,37 +80,41 @@ def _error_session(session_id: str, message: str):
 
 def _get_active_agents_from_backend() -> list:
     """
-    Tries to fetch active agents from your own backend:
+    Fetch active agents from your own backend:
       GET /api/agents/list  -> {"agents": {...}}
-    Falls back to 3 strong defaults if unreachable.
+    Falls back to a strong default trio if unreachable.
     """
     try:
         base = request.host_url.rstrip("/")
         url = f"{base}/api/agents/list"
         r = requests.get(url, timeout=10)
+        r.raise_for_status()
         data = r.json()
         agents_dict = data.get("agents", {})
-        # Keep only active ones; build list of {"name", "model"}
         active = []
         for key, v in agents_dict.items():
-            if v.get("active"):
+            if isinstance(v, dict) and v.get("active"):
                 active.append({"name": v.get("name", key), "model": v.get("model")})
         if not active:
+            logger.warning("[Relay] /api/agents/list returned no active agents; using fallback.")
             return FALLBACK_AGENTS
         return active
     except Exception as e:
-        logger.warning(f"[Relay] could not load /api/agents/list: {e}")
+        logger.warning(f"[Relay] could not load /api/agents/list; using fallback. err={e}")
         return FALLBACK_AGENTS
 
 def _call_openrouter(model: str, prompt: str) -> str:
     """
-    Calls OpenRouter model with the given prompt.
-    Requires env var OPENROUTER_API_KEY.
+    Call OpenRouter model with the given prompt.
+    Debug logs show whether the key is present and what HTTP status/body we got.
     """
-    if not OPENROUTER_API_KEY:
-        raise RuntimeError(
-            "OPENROUTER_API_KEY is missing. Set it in Railway environment variables."
-        )
+    # === DEBUG: confirm key presence & prefix ===
+    if OPENROUTER_API_KEY:
+        logger.info(f"[Relay] Using OPENROUTER_API_KEY prefix: {OPENROUTER_API_KEY[:10]}...")
+    else:
+        # Immediate, explicit error if key is missing at runtime
+        raise RuntimeError("OPENROUTER_API_KEY is missing at runtime.")
+
     headers = {
         "Authorization": f"Bearer {OPENROUTER_API_KEY}",
         "Content-Type": "application/json",
@@ -119,13 +123,31 @@ def _call_openrouter(model: str, prompt: str) -> str:
         "model": model,
         "messages": [{"role": "user", "content": prompt}],
     }
-    resp = requests.post(OPENROUTER_URL, headers=headers, json=body, timeout=60)
+
+    try:
+        resp = requests.post(OPENROUTER_URL, headers=headers, json=body, timeout=60)
+    except Exception as e:
+        logger.error(f"[Relay] OpenRouter network error model={model}: {type(e).__name__}: {e}")
+        raise
+
+    # === DEBUG: log status & brief body ===
+    status = resp.status_code
+    tail = resp.text[:500] if resp.text else ""
+    logger.info(f"[Relay] OpenRouter response model={model} status={status} body_snippet={tail!r}")
+
+    # Raise for HTTP errors so we capture details in results
     resp.raise_for_status()
     data = resp.json()
-    return data["choices"][0]["message"]["content"]
+
+    try:
+        return data["choices"][0]["message"]["content"]
+    except Exception as e:
+        # If schema unexpected, log full JSON snippet
+        logger.error(f"[Relay] Unexpected OpenRouter schema for model={model}: {data}")
+        raise
 
 # -----------------------------------------------------------------------------
-# Workers (run in a background thread)
+# Workers (run in background threads)
 # -----------------------------------------------------------------------------
 def _run_expert_panel(session_id: str):
     s = SESSIONS.get(session_id)
@@ -134,23 +156,26 @@ def _run_expert_panel(session_id: str):
     try:
         agents = _get_active_agents_from_backend()
         results = []
-        total = len(agents)
+        total = max(1, len(agents))
         for idx, agent in enumerate(agents, start=1):
             try:
                 out = _call_openrouter(agent["model"], s["prompt"])
-                results.append({"agent": agent["name"], "model": agent["model"], "response": out, "error": None})
+                results.append({
+                    "agent": agent["name"], "model": agent["model"],
+                    "response": out, "error": None
+                })
             except Exception as e:
-                results.append({"agent": agent["name"], "model": agent["model"], "response": None, "error": str(e)})
-            # update progress
-            s["progress"] = int(idx * 100 / max(total, 1))
+                results.append({
+                    "agent": agent["name"], "model": agent["model"],
+                    "response": None, "error": f"{type(e).__name__}: {e}"
+                })
+            s["progress"] = int(idx * 100 / total)
         _complete_session(session_id, results)
     except Exception as e:
-        _error_session(session_id, str(e))
+        _error_session(session_id, f"{type(e).__name__}: {e}")
 
 def _run_conference_chain(session_id: str):
-    """
-    Sequential 'sticky' chain: each agent builds on prior output.
-    """
+    """Sequential sticky chain: each agent builds on prior output."""
     s = SESSIONS.get(session_id)
     if not s:
         return
@@ -158,24 +183,30 @@ def _run_conference_chain(session_id: str):
         agents = _get_active_agents_from_backend()
         running_context = s["prompt"]
         results = []
-        total = len(agents)
+        total = max(1, len(agents))
         for idx, agent in enumerate(agents, start=1):
             try:
                 prompt = (
-                    f"Build on the evolving conference discussion below.\n\n"
+                    "Build on the evolving conference discussion below.\n\n"
                     f"=== Current context ===\n{running_context}\n\n"
-                    f"=== Your task ===\nAdd the next best contribution (concise but substantive)."
+                    "=== Your task ===\nAdd the next best contribution (concise but substantive), "
+                    "avoid repetition, and push the discussion forward with concrete insights."
                 )
                 out = _call_openrouter(agent["model"], prompt)
-                results.append({"agent": agent["name"], "model": agent["model"], "response": out, "error": None})
-                # grow context
+                results.append({
+                    "agent": agent["name"], "model": agent["model"],
+                    "response": out, "error": None
+                })
                 running_context += f"\n\n[{agent['name']}]: {out}"
             except Exception as e:
-                results.append({"agent": agent["name"], "model": agent["model"], "response": None, "error": str(e)})
-            s["progress"] = int(idx * 100 / max(total, 1))
+                results.append({
+                    "agent": agent["name"], "model": agent["model"],
+                    "response": None, "error": f"{type(e).__name__}: {e}"
+                })
+            s["progress"] = int(idx * 100 / total)
         _complete_session(session_id, results)
     except Exception as e:
-        _error_session(session_id, str(e))
+        _error_session(session_id, f"{type(e).__name__}: {e}")
 
 # -----------------------------------------------------------------------------
 # Endpoints
@@ -189,7 +220,6 @@ def start_expert_panel():
         return jsonify({"error": "Missing 'prompt'"}), 400
 
     session = _new_session(prompt, "expert_panel")
-    # Background run so the request returns immediately
     threading.Thread(target=_run_expert_panel, args=(session["id"],), daemon=True).start()
 
     return jsonify({
@@ -252,9 +282,11 @@ def generate_html_report(session_id):
     items = []
     for r in s["results"]:
         if r.get("error"):
-            items.append(f"<li><b>{r['agent']}</b> ({r['model']}): <span style='color:#f88'>ERROR: {r['error']}</span></li>")
+            items.append(f"<li><b>{r['agent']}</b> ({r['model']}): "
+                         f"<span style='color:#f88'>ERROR: {r['error']}</span></li>")
         else:
-            items.append(f"<li><b>{r['agent']}</b> ({r['model']}): {r['response']}</li>")
+            safe = (r['response'] or "").replace("<","&lt;").replace(">","&gt;")
+            items.append(f"<li><b>{r['agent']}</b> ({r['model']}): {safe}</li>")
 
     html = f"""
     <html>
