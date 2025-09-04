@@ -5,151 +5,116 @@ from datetime import datetime
 
 agents_bp = Blueprint('agents', __name__)
 
-# Complete 20-agent configuration
+# --- Curated, stable roster (no Anthropic, no Perplexity). OpenAI = GPT-5 only.
 AGENTS = {
-    # Current working 10 agents
-    'gpt-4o': {
-        'name': 'GPT-4o',
-        'model': 'openai/gpt-4o',
-        'description': 'Strategic planning & complex reasoning',
-        'specialty': 'Strategic Analysis',
-        'active': True
+    # General / Aggregator
+    "gpt-5": {
+        "name": "GPT-5",
+        "model": "openai/gpt-5",
+        "group": "General",
+        "active": True,
+        "notes": "Primary aggregator and generalist."
     },
-    'chatgpt-4-turbo': {
-        'name': 'ChatGPT 4 Turbo',
-        'model': 'openai/gpt-4-turbo',
-        'description': 'Business analysis & communication',
-        'specialty': 'Business Strategy',
-        'active': True
+
+    # Fast / Brainstorm
+    "gemini-2.0-flash": {
+        "name": "Gemini 2.0 Flash",
+        "model": "google/gemini-2.0-flash-exp",
+        "group": "Fast",
+        "active": True
     },
-    'deepseek-r1': {
-        'name': 'DeepSeek R1',
-        'model': 'deepseek/deepseek-r1',
-        'description': 'Advanced coding & technical problem solving',
-        'specialty': 'Technical Expert',
-        'active': True
+
+    # Reasoning / Code
+    "deepseek-r1": {
+        "name": "DeepSeek R1",
+        "model": "deepseek/deepseek-r1",
+        "group": "Reasoning",
+        "active": True
     },
-    'meta-llama-3.3': {
-        'name': 'Meta Llama 3.3',
-        'model': 'meta-llama/llama-3.3-70b-instruct',
-        'description': 'Creative thinking & content generation',
-        'specialty': 'Creative Analysis',
-        'active': True
+
+    # Long-context / Robust
+    "mixtral-8x22b": {
+        "name": "Mixtral 8x22B Instruct",
+        "model": "mistralai/mixtral-8x22b-instruct",
+        "group": "General",
+        "active": True
     },
-    'mistral-large': {
-        'name': 'Mistral Large',
-        'model': 'mistralai/mistral-large',
-        'description': 'Multilingual & analytical processing',
-        'specialty': 'Analytical Processing',
-        'active': True
+    "mistral-large": {
+        "name": "Mistral Large",
+        "model": "mistralai/mistral-large",
+        "group": "General",
+        "active": True
     },
-    'gemini-2.0-flash': {
-        'name': 'Gemini 2.0 Flash',
-        'model': 'google/gemini-2.0-flash-exp',
-        'description': 'Fast creative synthesis & brainstorming',
-        'specialty': 'Creative Synthesis',
-        'active': True
+
+    # Multilingual / Web-ish
+    "qwen-2.5-72b": {
+        "name": "Qwen 2.5 72B",
+        "model": "qwen/qwen-2.5-72b-instruct",
+        "group": "Multilingual",
+        "active": True
     },
-    'perplexity-pro': {
-        'name': 'Perplexity Pro',
-        'model': 'perplexity/llama-3.1-sonar-huge-128k-online',
-        'description': 'Research & fact-finding with web access',
-        'specialty': 'Research Expert',
-        'active': True
+
+    # Creative / Friendly
+    "yi-large": {
+        "name": "Yi Large",
+        "model": "01-ai/yi-large",
+        "group": "Creative",
+        "active": True
     },
-    'gemini-pro-1.5': {
-        'name': 'Gemini Pro 1.5',
-        'model': 'google/gemini-pro-1.5',
-        'description': 'Massive context & document analysis',
-        'specialty': 'Document Analysis',
-        'active': True
+    "dolphin-mixtral": {
+        "name": "Dolphin Mixtral",
+        "model": "openrouter/dolphin-mixtral",
+        "group": "Creative",
+        "active": True
     },
-    'command-r-plus': {
-        'name': 'Command R+',
-        'model': 'cohere/command-r-plus',
-        'description': 'Enterprise solutions & business strategy',
-        'specialty': 'Enterprise Solutions',
-        'active': True
+    "wizardlm-2": {
+        "name": "WizardLM 2",
+        "model": "openrouter/wizardlm-2",
+        "group": "General",
+        "active": True
     },
-    'qwen-2.5-72b': {
-        'name': 'Qwen 2.5 72B',
-        'model': 'qwen/qwen-2.5-72b-instruct',
-        'description': 'Multilingual expertise & cultural insights',
-        'specialty': 'Multilingual Expert',
-        'active': True
+    "openhermes-2.5": {
+        "name": "OpenHermes 2.5",
+        "model": "teknium/openhermes-2.5",
+        "group": "General",
+        "active": True
     },
-    
-    # Additional 10 revolutionary agents
-    'llama-3.3-70b': {
-        'name': 'Llama 3.3 70B',
-        'model': 'meta-llama/llama-3.3-70b-instruct',
-        'description': 'Advanced reasoning & logical analysis',
-        'specialty': 'Logical Reasoning',
-        'active': True
+
+    # Extras you already expose in UI (kept, but easy to disable)
+    "llama-3.3-70b": {
+        "name": "Llama 3.3 70B",
+        "model": "meta-llama/llama-3.3-70b-instruct",
+        "group": "General",
+        "active": True
     },
-    'mixtral-8x22b': {
-        'name': 'Mixtral 8x22B',
-        'model': 'mistralai/mixtral-8x22b-instruct',
-        'description': 'Technical expertise & system design',
-        'specialty': 'System Design',
-        'active': True
+    "starling-7b": {
+        "name": "Starling 7B",
+        "model": "openrouter/starling-lm-7b",
+        "group": "Light",
+        "active": True
     },
-    'yi-large': {
-        'name': 'Yi Large',
-        'model': '01-ai/yi-large',
-        'description': 'Innovation & creative problem solving',
-        'specialty': 'Innovation Expert',
-        'active': True
+    "zephyr-beta": {
+        "name": "Zephyr Beta",
+        "model": "openrouter/zephyr-7b-beta",
+        "group": "Light",
+        "active": True
     },
-    'nous-hermes-3': {
-        'name': 'Nous Hermes 3',
-        'model': 'nousresearch/hermes-3-llama-3.1-405b',
-        'description': 'Uncensored collaboration & free thinking',
-        'specialty': 'Free Thinking',
-        'active': True
+
+    # Explicitly disabled (kept for reference)
+    "perplexity-pro": {
+        "name": "Perplexity Pro",
+        "model": "perplexity/sonar-pro",
+        "group": "Research",
+        "active": False,
+        "notes": "Disabled: errors/rate limits in multi-agent runs."
     },
-    'wizardlm-2': {
-        'name': 'WizardLM 2',
-        'model': 'microsoft/wizardlm-2-8x22b',
-        'description': 'Mathematical reasoning & logic puzzles',
-        'specialty': 'Mathematical Reasoning',
-        'active': True
+    "claude-3.5": {
+        "name": "Claude 3.5",
+        "model": "anthropic/claude-3-5-sonnet",
+        "group": "General",
+        "active": False,
+        "notes": "Disabled per your preference; collaboration limits."
     },
-    'dolphin-mixtral': {
-        'name': 'Dolphin Mixtral',
-        'model': 'cognitivecomputations/dolphin-2.9-llama3-70b',
-        'description': 'Uncensored synthesis & bold ideas',
-        'specialty': 'Bold Synthesis',
-        'active': True
-    },
-    'openhermes-2.5': {
-        'name': 'OpenHermes 2.5',
-        'model': 'teknium/openhermes-2.5-mistral-7b',
-        'description': 'Perfect collaboration & team dynamics',
-        'specialty': 'Collaboration Expert',
-        'active': True
-    },
-    'starling-7b': {
-        'name': 'Starling 7B',
-        'model': 'berkeley-nest/starling-lm-7b-alpha',
-        'description': 'Fast synthesis & quick insights',
-        'specialty': 'Quick Insights',
-        'active': True
-    },
-    'neural-chat': {
-        'name': 'Neural Chat',
-        'model': 'intel/neural-chat-7b-v3-3',
-        'description': 'Conversational intelligence & dialogue',
-        'specialty': 'Dialogue Expert',
-        'active': True
-    },
-    'zephyr-beta': {
-        'name': 'Zephyr Beta',
-        'model': 'huggingfaceh4/zephyr-7b-beta',
-        'description': 'Advanced reasoning & final synthesis',
-        'specialty': 'Final Synthesis',
-        'active': True
-    }
 }
 
 @agents_bp.route('/list', methods=['GET'])
