@@ -9,12 +9,12 @@ from flask_cors import CORS, cross_origin
 sys.path.insert(0, os.path.dirname(os.path.dirname(__file__)))
 
 # --- Blueprints you already have ---
-from routes.agents import agents_bp
-from routes.human_simulator import human_simulator_bp
-from routes.revolutionary_relay import revolutionary_relay_bp
-from routes.payments import payments_bp
-from routes.ai_pair_system import ai_pair_system_bp
-from routes.conference_system import conference_system_bp
+from src.routes.agents import agents_bp
+from src.routes.human_simulator import human_simulator_bp
+from src.routes.revolutionary_relay import revolutionary_relay_bp
+from src.routes.payments import payments_bp
+from src.routes.ai_pair_system import ai_pair_system_bp
+from src.routes.conference_system import conference_system_bp
 
 # --- NEW: Advanced pipelines (10 Pairs + Conference Chain) ---
 try:
